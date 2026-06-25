@@ -19,7 +19,7 @@ Funciona offline e pode ser **instalado** na tela inicial do celular.
 5. Abra no celular e use **"Adicionar à tela de início"** (Android: menu do Chrome / iPhone: Compartilhar → Adicionar à Tela de Início).
 
 > Como é um PWA, depois de aberto uma vez ele funciona **sem internet**.
-> Sempre que atualizar o conteúdo, troque a versão do cache em `sw.js` (`plantao-v1` → `plantao-v2`).
+> O cache do service worker é versionado automaticamente (hash do conteúdo) a cada build; o app atualiza sozinho quando online.
 
 ## Para testar localmente no computador
 Na pasta do app, rode: `python3 -m http.server 8080` e abra `http://localhost:8080`.
