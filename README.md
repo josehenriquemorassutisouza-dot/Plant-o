@@ -8,7 +8,7 @@ Funciona offline e pode ser **instalado** na tela inicial do celular.
 > Não substitui o julgamento clínico. Confira as doses caso a caso.
 
 ## Conteúdo
-- 15 categorias · 75 fichas (faixa Adulto). Pediátrico/Gestante: em construção.
+- 15 categorias · 84 fichas (faixa Adulto). Pediátrico/Gestante: em construção.
 
 ## Como hospedar grátis no GitHub Pages
 1. Crie um repositório novo (ex.: `plantao`) no GitHub.
