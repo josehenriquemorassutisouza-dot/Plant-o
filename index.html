@@ -57,6 +57,13 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .brand b{font-size:var(--fs-lg);letter-spacing:.14em;font-weight:800}
 .brand small{display:block;font-size:var(--fs-overline);letter-spacing:.04em;color:var(--muted);margin-top:-2px;font-weight:600}
 .brand-app{color:#e23b3b;text-transform:lowercase}
+.tribute-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:24px;z-index:1000}
+.tribute-card{position:relative;background:var(--surface);border:1px solid var(--line);border-top:4px solid #e23b3b;border-radius:16px;padding:24px 20px 20px;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.tribute-card .t1{font-size:1rem;line-height:1.5;color:var(--ink)}
+.tribute-card .t1 b{color:#e23b3b}
+.tribute-card .t2{margin-top:12px;font-style:italic;color:var(--muted);font-size:.9rem;line-height:1.5}
+.tribute-x{position:absolute;top:6px;right:8px;border:none;background:transparent;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:8px}
+.tribute-x:hover{background:color-mix(in srgb,var(--ink) 10%,transparent)}
 .iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
   color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none}
 .iconbtn:active{transform:scale(.96)}
@@ -688,31 +695,37 @@ function renderHome(){
     h += '<div class="note">Na UPA, a gestante é atendida para queixas <b>sintomáticas</b> (náusea, dor, febre, ITU, tosse). Sangramento, dor abdominal, contrações, hipertensão/pré-eclâmpsia, redução de movimentos fetais ou trabalho de parto → estabilizar e encaminhar à <b>referência obstétrica</b>.</div>';
     view.innerHTML = h; return;
   }
-  h += '<div class="eyebrow">Ferramentas</div>';
+  h += '<div class="eyebrow">🛠️ Ferramentas</div>';
+  h += '<button class="row" data-go="#/exames"><div class="rt"><span class="pill">Exames</span><span>Interpretação de exames</span></div><div class="rp">Hemograma, gasometria, função renal e hepática, coagulação, marcadores e urina — como ler + próximo passo.</div></button>';
+  h += '<button class="row" data-go="#/ecg"><div class="rt"><span class="pill">ECG</span><span>ECG — leitura rápida</span></div><div class="rp">Sistemática, intervalos, IAM/oclusão e padrões que não podem passar.</div></button>';
+  h += '<button class="row" data-go="#/proc"><div class="rt"><span class="pill">Proced</span><span>Checklists de procedimento</span></div><div class="rp">Pausa de segurança + IOT, acesso central, dreno de tórax e punção lombar.</div></button>';
   h += '<button class="row" data-go="#/isr"><div class="rt"><span class="pill crit">ISR</span><span>Intubação em sequência rápida</span></div><div class="rp">Doses em mL pelo peso, guia dos 7 P e cronômetro de sequência.</div></button>';
-  h += '<button class="row" data-go="#/gotejamento"><div class="rt"><span class="pill">Calc</span><span>Calculadora de gotejamento</span></div><div class="rp">Volume/tempo → mL/h e gotas/min (macro e micro).</div></button>';
-  h += '<button class="row" data-go="#/bic"><div class="rt"><span class="pill">BIC</span><span>Drogas em infusão contínua</span></div><div class="rp">Diluição padrão + dose por peso → mL/h (noradrenalina, sedação, etc.).</div></button>';
+  h += '<button class="row" data-go="#/alta"><div class="rt"><span class="pill">Alta</span><span>Checklist de alta segura</span></div><div class="rp">Antes de liberar: estabilidade, quando NÃO dar alta, sinais de alarme e seguimento.</div></button>';
   h += '<button class="row" data-go="#/escores"><div class="rt"><span class="pill">Score</span><span>Escores clínicos</span></div><div class="rp">CURB-65, qSOFA, SOFA, NEWS2, Glasgow, Wells, CHA₂DS₂-VASc, HEART…</div></button>';
   h += '<button class="row" data-go="#/calculadoras"><div class="rt"><span class="pill">Calc</span><span>Calculadoras</span></div><div class="rp">Clearance, sódio corrigido, ânion gap, osmolaridade, cálcio…</div></button>';
-  h += '<button class="row" data-go="#/atb"><div class="rt"><span class="pill">ATB</span><span>Antibióticos empíricos</span></div><div class="rp">Esquema por foco (PAC, ITU, pele, abdome, SNC, sepse) + ajuste renal.</div></button>';
-  h += '<button class="row" data-go="#/eletro"><div class="rt"><span class="pill">Eletro</span><span>Reposição de eletrólitos</span></div><div class="rp">K, Na, Ca, Mg, P — prescrições prontas e limites de correção.</div></button>';
+  h += '<button class="row" data-go="#/gotejamento"><div class="rt"><span class="pill">Calc</span><span>Calculadora de gotejamento</span></div><div class="rp">Volume/tempo → mL/h e gotas/min (macro e micro).</div></button>';
+  h += '<button class="row" data-go="#/gestlact"><div class="rt"><span class="pill">Gesta</span><span>Gestante / lactante — o que pode</span></div><div class="rp">Por queixa e trimestre: a 1ª escolha que pode e o que evitar (náusea, dor/febre…).</div></button>';
+  h += '<button class="row" data-go="#/bic"><div class="rt"><span class="pill">BIC</span><span>Drogas em infusão contínua</span></div><div class="rp">Diluição padrão + dose por peso → mL/h (noradrenalina, sedação, etc.).</div></button>';
+  h += '<div class="eyebrow">📋 Modelos & Rotinas</div>';
+  h += '<button class="row" data-go="#/modelos"><div class="rt"><span class="pill">Mod</span><span>Modelos gerais (exame e anamnese)</span></div><div class="rp">Exame físico, anamnese, avaliação inicial, politrauma, exames, encaminhamentos, altas e evoluções — prontos para copiar.</div></button>';
+  h += '<button class="row" data-go="#/intern"><div class="rt"><span class="pill">Intern</span><span>Prescrição de internação</span></div><div class="rp">Modelo base + focos (sepse, PAC, DPOC, pielonefrite, celulite, ICC) — prontos para copiar.</div></button>';
+  h += '<button class="row" data-go="#/receituario"><div class="rt"><span class="pill">Receita</span><span>Receituário rápido</span></div><div class="rp">As condições mais comuns do plantão, por sistema — abre a ficha com a receita pronta para copiar.</div></button>';
   h += '<button class="row" data-go="#/dor"><div class="rt"><span class="pill">Dor</span><span>Analgesia e antieméticos</span></div><div class="rp">Escada analgésica, antieméticos, cólica renal e dor neuropática + doses.</div></button>';
-  h += '<button class="row" data-go="#/acls"><div class="rt"><span class="pill crit">ACLS</span><span>ACLS — parada e arritmias</span></div><div class="rp">FV/TV, AESP/assistolia, bradi/taqui, pós-PCR e 5H/5T (AHA 2025).</div></button>';
-  h += '<button class="row" data-go="#/sepse"><div class="rt"><span class="pill crit">Sepse</span><span>Sepse — bundle inicial</span></div><div class="rp">Reconhecer, pacote da 1ª hora, volume e vasopressores (SSC 2026).</div></button>';
-  h += '<button class="row" data-go="#/cad"><div class="rt"><span class="pill crit">CAD</span><span>CAD / EHH — passo a passo</span></div><div class="rp">Diagnóstico, fluidos→K→insulina, metas e armadilhas (consenso 2024).</div></button>';
-  h += '<button class="row" data-go="#/ecg"><div class="rt"><span class="pill">ECG</span><span>ECG — leitura rápida</span></div><div class="rp">Sistemática, intervalos, IAM/oclusão e padrões que não podem passar.</div></button>';
-  h += '<button class="row" data-go="#/neuroe"><div class="rt"><span class="pill crit">Neuro</span><span>Status epiléptico e trombólise (AVC)</span></div><div class="rp">Status (benzo→2ª linha→refratário) e trombólise no AVC (AHA 2026).</div></button>';
   h += '<button class="row" data-go="#/sangue"><div class="rt"><span class="pill">Sangue</span><span>Hemoderivados e reversão</span></div><div class="rp">Transfusão (hemácias/plaquetas/plasma) e reversão de anticoagulantes.</div></button>';
   h += '<button class="row" data-go="#/paliativo"><div class="rt"><span class="pill">Paliativo</span><span>Cuidados paliativos no PS</span></div><div class="rp">Dispneia, dor, náusea, secreções e agitação no fim de vida.</div></button>';
-  h += '<button class="row" data-go="#/alta"><div class="rt"><span class="pill">Alta</span><span>Checklist de alta segura</span></div><div class="rp">Antes de liberar: estabilidade, quando NÃO dar alta, sinais de alarme e seguimento.</div></button>';
-  h += '<button class="row" data-go="#/proc"><div class="rt"><span class="pill">Proced</span><span>Checklists de procedimento</span></div><div class="rp">Pausa de segurança + IOT, acesso central, dreno de tórax e punção lombar.</div></button>';
-  h += '<button class="row" data-go="#/modelos"><div class="rt"><span class="pill">Mod</span><span>Modelos gerais (exame e anamnese)</span></div><div class="rp">Exame físico, anamnese, avaliação inicial, politrauma, exames, encaminhamentos, altas e evoluções — prontos para copiar.</div></button>';
-  h += '<button class="row" data-go="#/sutura"><div class="rt"><span class="pill">Sut</span><span>Sutura (ferida e pontos)</span></div><div class="rp">Avaliação, fechar ou não, anestesia, fios e retirada, tétano/antibiótico e orientações.</div></button>';
-  h += '<button class="row" data-go="#/intern"><div class="rt"><span class="pill">Intern</span><span>Prescrição de internação</span></div><div class="rp">Modelo base + focos (sepse, PAC, DPOC, pielonefrite, celulite, ICC) — prontos para copiar.</div></button>';
-  h += '<button class="row" data-go="#/exames"><div class="rt"><span class="pill">Exames</span><span>Interpretação de exames</span></div><div class="rp">Hemograma, gasometria, função renal e hepática, coagulação, marcadores e urina — como ler + próximo passo.</div></button>';
+  h += '<div class="eyebrow">❤️ Cardiovascular</div>';
+  h += '<button class="row" data-go="#/acls"><div class="rt"><span class="pill crit">ACLS</span><span>ACLS — parada e arritmias</span></div><div class="rp">FV/TV, AESP/assistolia, bradi/taqui, pós-PCR e 5H/5T (AHA 2025).</div></button>';
+  h += '<div class="eyebrow">🧠 Neurológico</div>';
+  h += '<button class="row" data-go="#/neuroe"><div class="rt"><span class="pill crit">Neuro</span><span>Status epiléptico e trombólise (AVC)</span></div><div class="rp">Status (benzo→2ª linha→refratário) e trombólise no AVC (AHA 2026).</div></button>';
   h += '<button class="row" data-go="#/ave"><div class="rt"><span class="pill">AVC</span><span>AVC / AVE — condutas numeradas</span></div><div class="rp">Conduta inicial, isquêmico (reperfusão), hemorrágico e HSA — passos numerados e atuais.</div></button>';
-  h += '<button class="row" data-go="#/receituario"><div class="rt"><span class="pill">Receita</span><span>Receituário rápido</span></div><div class="rp">As condições mais comuns do plantão, por sistema — abre a ficha com a receita pronta para copiar.</div></button>';
-  h += '<button class="row" data-go="#/gestlact"><div class="rt"><span class="pill">Gesta</span><span>Gestante / lactante — o que pode</span></div><div class="rp">Por queixa e trimestre: a 1ª escolha que pode e o que evitar (náusea, dor/febre…).</div></button>';
+  h += '<div class="eyebrow">🦠 Infeccioso</div>';
+  h += '<button class="row" data-go="#/sepse"><div class="rt"><span class="pill crit">Sepse</span><span>Sepse — bundle inicial</span></div><div class="rp">Reconhecer, pacote da 1ª hora, volume e vasopressores (SSC 2026).</div></button>';
+  h += '<button class="row" data-go="#/atb"><div class="rt"><span class="pill">ATB</span><span>Antibióticos empíricos</span></div><div class="rp">Esquema por foco (PAC, ITU, pele, abdome, SNC, sepse) + ajuste renal.</div></button>';
+  h += '<div class="eyebrow">🩸 Endócrino / Metabólico</div>';
+  h += '<button class="row" data-go="#/cad"><div class="rt"><span class="pill crit">CAD</span><span>CAD / EHH — passo a passo</span></div><div class="rp">Diagnóstico, fluidos→K→insulina, metas e armadilhas (consenso 2024).</div></button>';
+  h += '<button class="row" data-go="#/eletro"><div class="rt"><span class="pill">Eletro</span><span>Reposição de eletrólitos</span></div><div class="rp">K, Na, Ca, Mg, P — prescrições prontas e limites de correção.</div></button>';
+  h += '<div class="eyebrow">🚑 Trauma / Politrauma</div>';
+  h += '<button class="row" data-go="#/sutura"><div class="rt"><span class="pill">Sut</span><span>Sutura (ferida e pontos)</span></div><div class="rp">Avaliação, fechar ou não, anestesia, fios e retirada, tétano/antibiótico e orientações.</div></button>';
   h += '<div class="eyebrow">Categorias · '+DATA.total+' fichas</div><div class="grid">';
   for(const c of DATA.categories){
     h += '<button class="cat" data-go="#/c/'+c.id+'"><span class="em">'+c.icon+'</span>'
@@ -3777,11 +3790,21 @@ function fallback(text,done){
   ta.select(); try{document.execCommand("copy");}catch(e){} document.body.removeChild(ta); done();
 }
 
+// ---- homenagem (uma vez por dispositivo) ----
+function tributeOnce(){
+  if(store.get("cerezu-tribute-v1")) return;
+  var ov=document.createElement("div"); ov.className="tribute-ov";
+  ov.innerHTML='<div class="tribute-card"><button class="tribute-x" aria-label="Fechar">×</button><div class="t1">Bem-vindo! Este aplicativo foi desenvolvido em homenagem aos meus eternos amigos <b>Yan Cerezuela</b> e <b>João Vitor Manetti</b>.</div><div class="t2">Não importa o quanto vocês corram da Clínica Médica… ela sempre vai alcançar vocês.</div></div>';
+  function close(){ store.set("cerezu-tribute-v1","1"); if(ov.parentNode) ov.parentNode.removeChild(ov); }
+  ov.addEventListener("click",function(e){ if(e.target===ov) close(); });
+  ov.querySelector(".tribute-x").addEventListener("click",close);
+  document.body.appendChild(ov);
+}
 // ---- disclaimer ----
 if(!store.get("plantao-disc-v1")){
   const s=document.getElementById("scrim"); s.style.display="flex";
-  document.getElementById("acc").onclick=()=>{ store.set("plantao-disc-v1","1"); s.style.display="none"; };
-}
+  document.getElementById("acc").onclick=()=>{ store.set("plantao-disc-v1","1"); s.style.display="none"; tributeOnce(); };
+} else { tributeOnce(); }
 
 // ---- service worker (only over http/https) ----
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
