@@ -205,10 +205,9 @@ tr:last-child td{border-bottom:0}
 .pchip.on,.dchip.on{background:var(--primary);border-color:var(--primary);color:#fff}
 .pd-dl{font-size:.9rem;margin-top:8px}
 .pd-range{color:var(--muted);font-size:.82rem}
-.pd-res{display:flex;align-items:stretch;gap:8px;margin-top:8px}
-.pd-pre{flex:1;margin:0;padding:11px 12px;font-family:var(--mono);font-size:.9rem;line-height:1.5;background:rgba(127,127,127,.10);border-radius:10px;white-space:pre-wrap}
-.pd-copy{appearance:none;border:1px solid var(--primary);background:var(--primary);color:#fff;border-radius:10px;padding:0 14px;font-weight:600;cursor:pointer;white-space:nowrap}
-.pd-copy.ok{background:var(--casa);border-color:var(--casa)}
+.pd-rx{display:flex;align-items:stretch;gap:8px;margin-top:8px;border:none;padding:0;background:none;box-shadow:none}
+.pd-rx .rx-pre{flex:1;margin:0}
+.pd-rx .rx-copy{white-space:nowrap;align-self:stretch}
 .pd-detail{color:var(--muted);font-size:.82rem;margin-top:6px}
 .orient{margin:14px 0;border:1px dashed var(--line);border-radius:12px;overflow:hidden;background:var(--surface2)}
 .orient-bar{font-size:var(--fs-overline);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:9px 13px;border-bottom:1px dashed var(--line)}
@@ -2770,22 +2769,19 @@ function pdPhrase(d,w){
   var mL2=mg/p.conc; return {phrase:"Dar "+nf(mL2,1)+" mL VO de "+d.freq+".", detail:nf(mg,0)+" mg/dose"};
 }
 function pdCardHTML(d,w){
+  if(!pdSt[d.id]) pdSt[d.id]={p:0,dose:d.ddef};
   var st=pdSt[d.id];
+  if(st.p==null||st.p<0||st.p>=d.pres.length) st.p=0;
+  if(st.dose==null) st.dose=d.ddef;
   var h='<div class="pd-card"><div class="pd-n">'+esc(d.n)+'</div>';
   h+='<label class="pd-presl">Apresentação<select class="pd-sel" data-d="'+d.id+'">'+d.pres.map(function(p,i){ return '<option value="'+i+'"'+(i===st.p?' selected':'')+'>'+esc(p.l)+'</option>'; }).join('')+'</select></label>';
   h+='<div class="pd-dl">Dose: <b>'+nf(st.dose,0)+' mg/kg/dose</b> <span class="pd-range">(faixa '+d.dmin+'–'+d.dmax+' mg/kg)</span></div>';
   h+='<div class="pd-doses">'+pdDoseChips(d).map(function(v){ return '<button type="button" class="dchip'+(v===st.dose?' on':'')+'" data-d="'+d.id+'" data-dose="'+v+'">'+v+'</button>'; }).join('')+'</div>';
   var r=pdPhrase(d,w);
-  h+='<div class="pd-res"><pre class="pd-pre">'+esc(r.phrase)+'</pre><button type="button" class="pd-copy" data-d="'+d.id+'">Copiar</button></div>';
+  h+='<div class="rx pd-rx"><pre class="rx-pre">'+esc(r.phrase)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
   h+='<div class="pd-detail">'+esc(r.detail)+(d.cap?' · '+esc(d.cap):'')+'</div>';
   h+='</div>';
   return h;
-}
-function pdFallback(text,done){ var ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");}catch(e){} document.body.removeChild(ta); done(); }
-function pdCopy(text,btn){
-  function done(){ var o=btn.textContent; btn.textContent="Copiado ✓"; btn.classList.add("ok"); setTimeout(function(){btn.textContent=o; btn.classList.remove("ok");},1400); }
-  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(function(){pdFallback(text,done);}); }
-  else pdFallback(text,done);
 }
 function renderPDose(){
   var w0=store.get("ped-w")||"", ay0=store.get("ped-ay")||"", am0=store.get("ped-am")||"";
@@ -2811,7 +2807,7 @@ function renderPDose(){
       renderFebre(w);
       pedDoseRender("pd-out","pd-w",SINTOM.slice(1),w,pedAgeM("pd-ay","pd-am"),rec,{neoBanner:"Neonato (&lt; 1 mês): a maioria dos sintomáticos não é indicada — priorize a avaliação. Paracetamol com intervalo maior; evite dipirona, ibuprofeno e anti-histamínicos.", foot:"Doses pediátricas usuais (base SBP / Ministério da Saúde). Confira a concentração da apresentação e a dose-teto. Não substitui o julgamento clínico."});
     }catch(err){
-      var o=document.getElementById("pd-out"); if(o) o.innerHTML='<div class="em-flag">Não foi possível calcular: '+esc(String((err&&err.message)||err))+'</div>';
+      var o=document.getElementById("pd-out"); if(o) o.innerHTML='<div class="em-flag">Não foi possível calcular agora. Recarregue a tela; se persistir, avise.</div>';
     }
   };
   ["#pd-w","#pd-ay","#pd-am"].forEach(function(s){ var el=view.querySelector(s); if(el) el.addEventListener("input",rec); });
@@ -2822,7 +2818,6 @@ function renderPDose(){
   if(febre){ febre.addEventListener("click", function(ev){
     var w=parseFloat(view.querySelector("#pd-w").value)||0;
     var dc=ev.target.closest(".dchip"); if(dc){ pdSt[dc.getAttribute("data-d")].dose=parseFloat(dc.getAttribute("data-dose")); renderFebre(w); return; }
-    var cp=ev.target.closest(".pd-copy"); if(cp){ if(w<=0) return; var id=cp.getAttribute("data-d"); var d=null; PFEBRE.forEach(function(x){if(x.id===id)d=x;}); if(!d) return; pdCopy(pdPhrase(d,w).phrase,cp); return; }
   }); }
   rec();
 }
@@ -3755,14 +3750,6 @@ function renderGestLact(){
   rec();
 }
 // ---- router ----
-window.addEventListener("error", function(e){
-  try{
-    if(e && e.message && String(e.message).indexOf("Script error")>=0) return;
-    var b=document.getElementById("errbanner"); if(!b){ b=document.createElement("div"); b.id="errbanner"; document.body.appendChild(b); }
-    b.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#b00020;color:#fff;padding:10px 12px;border-radius:10px;font:13px/1.45 -apple-system,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.4)";
-    b.textContent="Erro: "+(e.message||e.type)+" ("+String(e.filename||"").split("/").pop()+":"+e.lineno+")";
-  }catch(_){}
-});
 function render(){
   if(isrTimer){clearInterval(isrTimer);isrTimer=null;}
   const q = input.value.trim();
