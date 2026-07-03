@@ -208,7 +208,11 @@ tr:last-child td{border-bottom:0}
 .pd-rx{display:flex;align-items:stretch;gap:8px;margin-top:8px;border:none;padding:0;background:none;box-shadow:none}
 .pd-rx .rx-pre{flex:1;margin:0}
 .pd-rx .rx-copy{white-space:nowrap;align-self:stretch}
+.pd-edit{outline:none}
+.pd-edit:focus{box-shadow:inset 0 0 0 2px var(--primary);border-radius:8px}
 .pd-detail{color:var(--muted);font-size:.82rem;margin-top:6px}
+.pd-info{font-size:.9rem;line-height:1.5;color:var(--ink);margin-top:2px}
+.pd-flag{font-size:.82rem;line-height:1.45;color:var(--warn);margin-top:8px;padding-left:10px;border-left:3px solid var(--warn)}
 .orient{margin:14px 0;border:1px dashed var(--line);border-radius:12px;overflow:hidden;background:var(--surface2)}
 .orient-bar{font-size:var(--fs-overline);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:9px 13px;border-bottom:1px dashed var(--line)}
 .orient-pre{margin:0;padding:11px 14px;font-family:inherit;font-size:var(--fs-caption);line-height:1.55;color:var(--ink);white-space:pre-wrap}
@@ -584,6 +588,9 @@ function search(q){
   if(/dose por peso|sintom[áa]tic|dose pediatr|calculadora.*dose|dose.*crian|antit[ée]rmico|antipir[ée]tic|paracetamol.*crian|dipirona.*crian|ibuprofeno.*crian|antiem[ée]tico.*crian|prednisolona.*crian/.test(nq))
     out.unshift({id:"pdose",title:"Sintomáticos — dose por peso (pediátrico)",catName:"Pediátrico",
       preview:"Antitérmicos, analgésicos, antieméticos e mais, com alertas por idade.",go:"#/pdose"});
+  if(/antibi[óo]tic.*crian|amoxicilina.*crian|amoxicilina.*peso|amox.?clav.*crian|azitromicina.*crian|atb.*crian|atb.*peso|dose.*amoxicilina|susp.*mg\/5|mg\/kg\/dia/.test(nq))
+    out.unshift({id:"patb",title:"Antibióticos — dose por peso (pediátrico)",catName:"Pediátrico",
+      preview:"Amoxicilina, amox-clav e azitromicina: regime + apresentação → mL por tomada.",go:"#/patb"});
   if(/gestante|gravida|gr[áa]vida|gesta[çc][ãa]o|gravidez|lactante|lactacao|lacta[çc][ãa]o|amament|trimestre|gravid|pode na gravidez|seguro na gesta/.test(nq))
     out.unshift({id:"gestlact",title:"Gestante / lactante — o que pode",catName:"Gestante",
       preview:"Por queixa: 1ª escolha que pode e o que evitar, por trimestre (náusea, dor/febre…).",go:"#/gestlact"});
@@ -683,6 +690,7 @@ function renderHome(){
     h += '<button class="row" data-go="#/pvitais"><div class="rt"><span class="pill">Peds</span><span>Sinais vitais por idade</span></div><div class="rp">FC, FR e PA normais por faixa etária + limiar de hipotensão (SAVP/AHA).</div></button>';
     h += '<button class="row" data-go="#/pemerg"><div class="rt"><span class="pill">Emerg</span><span>Doses de emergência por peso</span></div><div class="rp">Peso + idade → adrenalina, atropina, amiodarona, adenosina, anafilaxia, convulsão e mais.</div></button>';
     h += '<button class="row" data-go="#/pdose"><div class="rt"><span class="pill">Dose</span><span>Sintomáticos — dose por peso</span></div><div class="rp">Antitérmicos, analgésicos, antieméticos e mais, com alertas de contraindicação por idade.</div></button>';
+    h += '<button class="row" data-go="#/patb"><div class="rt"><span class="pill">ATB</span><span>Antibióticos — dose por peso</span></div><div class="rp">Amoxicilina, amox-clav e azitromicina: regime + apresentação → mL por tomada, com duração editável.</div></button>';
     h += '<button class="row" data-go="#/phidrat"><div class="rt"><span class="pill">Hidrat</span><span>Hidratação na criança</span></div><div class="rp">Planos A/B/C, soro de reidratação, bólus e manutenção (Holliday-Segar) pelo peso.</div></button>';
     h += '<button class="row" data-go="#/pbroselow"><div class="rt"><span class="pill">Fita</span><span>Fita de Broselow</span></div><div class="rp">Material por peso/cor: tubo, lâmina, sondas, máscara e volume corrente.</div></button>';
     h += '<div class="eyebrow">Emergências (SAVP)</div>';
@@ -2748,40 +2756,163 @@ function pedDoseRender(outId,wId,groups,w,ageM,rec,opts){
 }
 var PSINT2=[
  {g:"Analgésicos e antitérmicos simples", d:[
-   {id:"para",n:"Paracetamol",freq:"6/6h",dmin:10,dmax:15,ddef:15,cap:"máx 75 mg/kg/dia",
+   {type:"calc",id:"para",n:"Paracetamol",freq:"6/6h",dmin:10,dmax:15,ddef:15,cap:"máx 75 mg/kg/dia",
     pres:[{l:"Gotas 200 mg/mL",conc:200,drop:true},{l:"Suspensão 32 mg/mL",conc:32},{l:"Comp 500 mg",tab:500},{l:"Comp 750 mg",tab:750}]},
-   {id:"dipi",n:"Dipirona",freq:"6/6h",dmin:10,dmax:25,ddef:25,cap:"evitar em < 3 meses ou < 5 kg",
+   {type:"calc",id:"dipi",n:"Dipirona",freq:"6/6h",dmin:10,dmax:25,ddef:25,cap:"evitar em < 3 meses ou < 5 kg",
     pres:[{l:"Gotas 500 mg/mL",conc:500,drop:true},{l:"Solução 50 mg/mL",conc:50},{l:"Comp 500 mg",tab:500}]}
  ]},
  {g:"Anti-inflamatórios (AINEs)", d:[
-   {id:"ibup",n:"Ibuprofeno",freq:"8/8h",dmin:5,dmax:10,ddef:10,cap:"máx 40 mg/kg/dia · evitar em desidratação/dengue",
+   {type:"calc",id:"ibup",n:"Ibuprofeno",freq:"8/8h",dmin:5,dmax:10,ddef:10,cap:"máx 40 mg/kg/dia · evitar em desidratação/dengue · evitar < 6 meses",
     pres:[{l:"Gotas 50 mg/mL",conc:50,drop:true},{l:"Gotas 100 mg/mL",conc:100,drop:true},{l:"Suspensão 20 mg/mL",conc:20},{l:"Comp 600 mg",tab:600}]}
+ ]},
+ {g:"Antieméticos", d:[
+   {type:"calc",id:"bromo",n:"Bromoprida",freq:"8/8h",dmin:0.15,dmax:0.3,ddef:0.3,cap:"REMUME · risco extrapiramidal",
+    pres:[{l:"Gotas 4 mg/mL",conc:4,drop:true},{l:"Comprimido 10 mg",tab:10}]},
+   {type:"calc",id:"metoclo",n:"Metoclopramida",freq:"8/8h",dmin:0.15,dmax:0.15,ddef:0.15,capMg:10,cap:"REMUME · máx 10 mg/dose · risco extrapiramidal",flag:"Contraindicada em menores de 1 ano.",
+    pres:[{l:"Gotas 4 mg/mL",conc:4,drop:true},{l:"Comprimido 10 mg",tab:10}]},
+   {type:"info",n:"Ondansetrona",text:"Por faixa de peso (GECA): 2 mg (8–15 kg) · 4 mg (15–30 kg) · 8 mg (> 30 kg). VO/IV, repetir 8/8h.",flag:"Fora do REMUME · melhor evidência na GECA · cuidado com QT/eletrólitos · dados limitados em < 4 meses."}
+ ]},
+ {g:"Anti-histamínicos", d:[
+   {type:"calc",id:"dexclor",n:"Dexclorfeniramina",freq:"8/8h",dmin:0.05,dmax:0.05,ddef:0.05,cap:"fora do REMUME (preferir loratadina) · 0,15 mg/kg/dia · causa sonolência",flag:"Evitar em menores de 2 anos.",
+    pres:[{l:"Xarope 0,4 mg/mL",conc:0.4}]},
+   {type:"info",n:"Loratadina (não sedativa · REMUME)",text:"Por idade: 5 mg (2–5 anos) · 10 mg (≥ 6 anos), 1×/dia. Xarope 1 mg/mL.",flag:"A partir de 2 anos · cetirizina e desloratadina ficam fora do REMUME."}
+ ]},
+ {g:"Corticoides", d:[
+   {type:"calc",id:"pred",n:"Prednisolona / prednisona",freq:"1×/dia",dmin:1,dmax:2,ddef:1,capMg:40,cap:"3 a 5 dias · máx 40 mg/dia",
+    pres:[{l:"Solução 3 mg/mL",conc:3},{l:"Comprimido 5 mg",tab:5},{l:"Comprimido 20 mg",tab:20}]}
+ ]},
+ {g:"Broncodilatadores", d:[
+   {type:"info",n:"Salbutamol (spray + espaçador)",text:"Crise leve: 2 a 4 jatos (100 mcg/jato) de 4/6h, sempre com espaçador. Nebulização: 0,1 mg/kg (mín 2,5 / máx 5 mg), solução 5 mg/mL."}
+ ]},
+ {g:"Não recomendados nesta faixa", d:[
+   {type:"info",n:"Antitussígenos e descongestionantes",text:"Evitar. Hidratação, lavagem nasal com soro e tempo.",flag:"Não usar em < 2 anos; evitar em < 6 anos (sem benefício comprovado e com risco)."},
+   {type:"info",n:"AAS / nimesulida",text:"Evitar. Use paracetamol, dipirona ou ibuprofeno.",flag:"AAS: risco de síndrome de Reye. Nimesulida: contraindicada em < 12 anos."},
+   {type:"info",n:"Codeína / opioides",text:"Sem opioide no REMUME municipal. Preferir paracetamol/dipirona ± ibuprofeno.",flag:"Codeína contraindicada em < 12 anos (risco de depressão respiratória)."}
  ]}
 ];
-var PFEBRE=[]; PSINT2.forEach(function(gr){ gr.d.forEach(function(x){ PFEBRE.push(x); }); });
+var PFEBRE=[]; PSINT2.forEach(function(gr){ gr.d.forEach(function(x){ if(x.type!=="info") PFEBRE.push(x); }); });
 var pdSt={};
 function pdInit(){ PFEBRE.forEach(function(d){ if(!pdSt[d.id]) pdSt[d.id]={p:0,dose:d.ddef}; }); }
-function pdDoseChips(d){ var arr=[]; var step=((d.dmax-d.dmin)<=5?1:5); for(var v=d.dmin; v<=d.dmax+0.001; v+=step){ arr.push(Math.round(v)); } if(arr[arr.length-1]!==d.dmax) arr.push(d.dmax); return arr; }
+function pdDec(d){ return (d.dmax<1)?2:((d.dmax<10)?1:0); }
+function pdDoseChips(d){ var lo=d.dmin,hi=d.dmax,f=Math.pow(10,pdDec(d)); var raw=(lo===hi)?[lo]:[lo,(lo+hi)/2,hi,d.ddef]; var seen={},out=[]; raw.forEach(function(v){ var r=Math.round(v*f)/f; if(!(r in seen)){seen[r]=1;out.push(r);} }); out.sort(function(a,b){return a-b;}); return out; }
 function pdPhrase(d,w){
-  var st=pdSt[d.id]; var p=d.pres[st.p]; var mg=st.dose*w;
-  if(p.drop){ var mL=mg/p.conc; var g=mL*20; return {phrase:"Dar "+nf(g,1)+" gotas VO de "+d.freq+".", detail:nf(mg,0)+" mg/dose ≈ "+nf(mL,2)+" mL"}; }
-  if(p.tab){ var n=mg/p.tab; return {phrase:"Dar "+nf(mg,0)+" mg VO de "+d.freq+".", detail:"≈ "+nf(n,2)+" comp de "+p.tab+" mg — fracionar conforme possível"}; }
-  var mL2=mg/p.conc; return {phrase:"Dar "+nf(mL2,1)+" mL VO de "+d.freq+".", detail:nf(mg,0)+" mg/dose"};
+  var st=pdSt[d.id]; var p=d.pres[st.p]; var mg=st.dose*w; var capped=false;
+  if(d.capMg&&mg>d.capMg){ mg=d.capMg; capped=true; }
+  var tail=capped?" (dose máxima)":"";
+  var via=(d.freq.indexOf("×")>=0||d.freq.indexOf("/dia")>=0)?"VO ":"VO de ";
+  if(p.drop){ var mL=mg/p.conc; var g=mL*20; return {phrase:"Dar "+nf(g,1)+" gotas "+via+d.freq+".", detail:nf(mg,0)+" mg/dose ≈ "+nf(mL,2)+" mL"+tail}; }
+  if(p.tab){ var n=mg/p.tab; return {phrase:"Dar "+nf(mg,0)+" mg "+via+d.freq+".", detail:"≈ "+nf(n,2)+" comp de "+p.tab+" mg — fracionar conforme possível"+tail}; }
+  var mL2=mg/p.conc; return {phrase:"Dar "+nf(mL2,1)+" mL "+via+d.freq+".", detail:nf(mg,0)+" mg/dose"+tail};
 }
 function pdCardHTML(d,w){
+  if(d.type==="info"){
+    return '<div class="pd-card"><div class="pd-n">'+esc(d.n)+'</div><div class="pd-info">'+esc(d.text)+'</div>'+(d.flag?'<div class="pd-flag">'+esc(d.flag)+'</div>':'')+'</div>';
+  }
   if(!pdSt[d.id]) pdSt[d.id]={p:0,dose:d.ddef};
   var st=pdSt[d.id];
   if(st.p==null||st.p<0||st.p>=d.pres.length) st.p=0;
   if(st.dose==null) st.dose=d.ddef;
+  var dec=pdDec(d);
   var h='<div class="pd-card"><div class="pd-n">'+esc(d.n)+'</div>';
   h+='<label class="pd-presl">Apresentação<select class="pd-sel" data-d="'+d.id+'">'+d.pres.map(function(p,i){ return '<option value="'+i+'"'+(i===st.p?' selected':'')+'>'+esc(p.l)+'</option>'; }).join('')+'</select></label>';
-  h+='<div class="pd-dl">Dose: <b>'+nf(st.dose,0)+' mg/kg/dose</b> <span class="pd-range">(faixa '+d.dmin+'–'+d.dmax+' mg/kg)</span></div>';
-  h+='<div class="pd-doses">'+pdDoseChips(d).map(function(v){ return '<button type="button" class="dchip'+(v===st.dose?' on':'')+'" data-d="'+d.id+'" data-dose="'+v+'">'+v+'</button>'; }).join('')+'</div>';
+  h+='<div class="pd-dl">Dose: <b>'+nf(st.dose,dec)+' mg/kg/dose</b> <span class="pd-range">(faixa '+nf(d.dmin,dec)+'–'+nf(d.dmax,dec)+' mg/kg)</span></div>';
+  h+='<div class="pd-doses">'+pdDoseChips(d).map(function(v){ return '<button type="button" class="dchip'+(v===st.dose?' on':'')+'" data-d="'+d.id+'" data-dose="'+v+'">'+nf(v,dec)+'</button>'; }).join('')+'</div>';
   var r=pdPhrase(d,w);
   h+='<div class="rx pd-rx"><pre class="rx-pre">'+esc(r.phrase)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
   h+='<div class="pd-detail">'+esc(r.detail)+(d.cap?' · '+esc(d.cap):'')+'</div>';
+  h+=(d.flag?'<div class="pd-flag">'+esc(d.flag)+'</div>':'');
   h+='</div>';
   return h;
+}
+var PATB=[
+ {id:"amox",n:"Amoxicilina",dur:"7 dias",
+  reg:[{l:"Padrão (50 mg/kg/dia · 8/8h)",dmin:40,dmax:50,ddef:50,div:3,freq:"8/8h"},
+       {l:"Dose alta (90 mg/kg/dia · 12/12h)",dmin:80,dmax:90,ddef:90,div:2,freq:"12/12h"}],
+  capDay:3000,
+  pres:[{l:"Suspensão 250 mg/5 mL",conc:50},{l:"Suspensão 400 mg/5 mL",conc:80}]},
+ {id:"amoxclav",n:"Amoxicilina + clavulanato",dur:"7 dias",
+  reg:[{l:"Padrão (50 mg/kg/dia · 8/8h)",dmin:40,dmax:50,ddef:50,div:3,freq:"8/8h"},
+       {l:"Dose alta (90 mg/kg/dia · 12/12h)",dmin:80,dmax:90,ddef:90,div:2,freq:"12/12h"}],
+  capDay:3000, note:"Dose pela amoxicilina. Na DOSE ALTA, usar a formulação ES (600/42,9 mg/5 mL) para não exceder o clavulanato.",
+  pres:[{l:"Suspensão 250/62,5 mg/5 mL",conc:50},{l:"Suspensão ES 600/42,9 mg/5 mL",conc:120}]},
+ {id:"azitro",n:"Azitromicina",dur:"3 dias",
+  reg:[{l:"10 mg/kg/dia · 1×/dia",dmin:10,dmax:10,ddef:10,div:1,freq:"1×/dia"}],
+  capDay:500,
+  pres:[{l:"Suspensão 200 mg/5 mL",conc:40}]}
+];
+var patbSt={};
+function patbInit(){ PATB.forEach(function(d){ if(!patbSt[d.id]) patbSt[d.id]={p:0,r:0,dose:d.reg[0].ddef}; }); }
+function patbPhrase(d,w){
+  var st=patbSt[d.id];
+  var r=d.reg[st.r]||d.reg[0]; var p=d.pres[st.p]||d.pres[0];
+  var totalDay=st.dose*w; var capped=false;
+  if(d.capDay&&totalDay>d.capDay){ totalDay=d.capDay; capped=true; }
+  var perDoseMg=totalDay/r.div;
+  var mL=perDoseMg/p.conc;
+  var dur=d.dur?(" por "+d.dur):"";
+  var phrase="Dar "+nf(mL,1)+" mL VO "+(r.freq.indexOf("×")>=0?"":"de ")+r.freq+dur+".";
+  var detail=nf(perDoseMg,0)+" mg/dose · "+nf(totalDay,0)+" mg/dia"+(capped?" (máx)":"");
+  return {phrase:phrase, detail:detail};
+}
+function patbCardHTML(d,w){
+  if(!patbSt[d.id]) patbSt[d.id]={p:0,r:0,dose:d.reg[0].ddef};
+  var st=patbSt[d.id];
+  if(st.r==null||st.r<0||st.r>=d.reg.length) st.r=0;
+  if(st.p==null||st.p<0||st.p>=d.pres.length) st.p=0;
+  var r=d.reg[st.r];
+  if(st.dose==null) st.dose=r.ddef;
+  var dec=(r.dmax<10)?1:0;
+  var h='<div class="pd-card"><div class="pd-n">'+esc(d.n)+'</div>';
+  // Regime (se houver mais de um)
+  if(d.reg.length>1){
+    h+='<div class="pd-doses" style="margin-top:2px">'+d.reg.map(function(rg,i){ return '<button type="button" class="dchip'+(i===st.r?' on':'')+'" data-patbreg="'+d.id+'" data-r="'+i+'">'+esc(rg.l)+'</button>'; }).join('')+'</div>';
+  }
+  // Apresentação
+  h+='<label class="pd-presl">Apresentação<select class="patb-sel" data-patb="'+d.id+'">'+d.pres.map(function(p,i){ return '<option value="'+i+'"'+(i===st.p?' selected':'')+'>'+esc(p.l)+'</option>'; }).join('')+'</select></label>';
+  // Dose + faixa
+  h+='<div class="pd-dl">Dose: <b>'+nf(st.dose,dec)+' mg/kg/dia</b> <span class="pd-range">(faixa '+nf(r.dmin,dec)+'–'+nf(r.dmax,dec)+' · '+esc(r.freq)+')</span></div>';
+  // Chips de dose (faixa)
+  var lo=r.dmin,hi=r.dmax,f=Math.pow(10,dec); var raw=(lo===hi)?[lo]:[lo,(lo+hi)/2,hi,r.ddef]; var seen={},chips=[];
+  raw.forEach(function(v){ var q=Math.round(v*f)/f; if(!(q in seen)){seen[q]=1;chips.push(q);} }); chips.sort(function(a,b){return a-b;});
+  h+='<div class="pd-doses">'+chips.map(function(v){ return '<button type="button" class="dchip'+(v===st.dose?' on':'')+'" data-patbdose="'+d.id+'" data-dose="'+v+'">'+nf(v,dec)+'</button>'; }).join('')+'</div>';
+  // Frase (bloco .rx COM barra → copiável e editável)
+  var pr=patbPhrase(d,w);
+  h+='<div class="rx pd-rx"><pre class="rx-pre pd-edit" contenteditable="true" spellcheck="false">'+esc(pr.phrase)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
+  h+='<div class="pd-detail">'+esc(pr.detail)+(d.dur?' · toque na frase para ajustar a duração':'')+'</div>';
+  if(d.note) h+='<div class="pd-flag">'+esc(d.note)+'</div>';
+  h+='</div>';
+  return h;
+}
+function renderPAtb(){
+  var w0=store.get("ped-w")||"";
+  patbInit();
+  var h='<button class="back" data-go="#/">‹ Início</button>';
+  h+='<div class="fhead"><h1>Antibióticos — dose por peso</h1></div>';
+  h+='<div class="sclead">Informe o peso. Escolha o regime e a apresentação; a posologia sai pronta (mL por tomada) e a duração é editável antes de copiar.</div>';
+  h+='<div class="em-in"><label>Peso<input id="patb-w" type="number" inputmode="decimal" step="0.1" min="0" placeholder="kg" value="'+w0+'"><span class="isr-unit">kg</span></label></div>';
+  h+='<div id="patb-out"></div>';
+  view.innerHTML=h; scrollTo(0,0);
+  var box=document.getElementById("patb-out");
+  var draw=function(){
+    try{
+      var w=parseFloat(view.querySelector("#patb-w").value)||0;
+      if(w>0) store.set("ped-w",String(w));
+      if(w<=0){ box.innerHTML='<div class="em-x" style="margin:4px 0 10px">Informe o peso para ver a posologia pronta.</div>'; return; }
+      box.innerHTML=PATB.map(function(d){return patbCardHTML(d,w);}).join("");
+    }catch(err){ box.innerHTML='<div class="em-flag">Não foi possível calcular agora. Recarregue a tela; se persistir, avise.</div>'; }
+  };
+  var wel=view.querySelector("#patb-w"); if(wel) wel.addEventListener("input",draw);
+  if(box){
+    box.addEventListener("change", function(ev){
+      var sel=ev.target.closest(".patb-sel"); if(sel){ var w=parseFloat(view.querySelector("#patb-w").value)||0; patbSt[sel.getAttribute("data-patb")].p=parseInt(sel.value,10); draw(); }
+    });
+    box.addEventListener("click", function(ev){
+      var w=parseFloat(view.querySelector("#patb-w").value)||0;
+      var rg=ev.target.closest("[data-patbreg]"); if(rg){ var id=rg.getAttribute("data-patbreg"); var st=patbSt[id]; st.r=parseInt(rg.getAttribute("data-r"),10); var dref=null; PATB.forEach(function(x){if(x.id===id)dref=x;}); st.dose=dref.reg[st.r].ddef; draw(); return; }
+      var dc=ev.target.closest("[data-patbdose]"); if(dc){ patbSt[dc.getAttribute("data-patbdose")].dose=parseFloat(dc.getAttribute("data-dose")); draw(); return; }
+    });
+  }
+  draw();
 }
 function renderPDose(){
   var w0=store.get("ped-w")||"", ay0=store.get("ped-ay")||"", am0=store.get("ped-am")||"";
@@ -2805,7 +2936,6 @@ function renderPDose(){
       store.set("ped-ay", view.querySelector("#pd-ay").value);
       store.set("ped-am", view.querySelector("#pd-am").value);
       renderFebre(w);
-      pedDoseRender("pd-out","pd-w",SINTOM.slice(1),w,pedAgeM("pd-ay","pd-am"),rec,{neoBanner:"Neonato (&lt; 1 mês): a maioria dos sintomáticos não é indicada — priorize a avaliação. Paracetamol com intervalo maior; evite dipirona, ibuprofeno e anti-histamínicos.", foot:"Doses pediátricas usuais (base SBP / Ministério da Saúde). Confira a concentração da apresentação e a dose-teto. Não substitui o julgamento clínico."});
     }catch(err){
       var o=document.getElementById("pd-out"); if(o) o.innerHTML='<div class="em-flag">Não foi possível calcular agora. Recarregue a tela; se persistir, avise.</div>';
     }
@@ -3790,6 +3920,7 @@ function render(){
   else if(hash.indexOf("#/proc")===0) renderProcHome();
   else if(hash.indexOf("#/pvitais")===0) renderPVitais();
   else if(hash.indexOf("#/pemerg")===0) renderEmerg();
+  else if(hash.indexOf("#/patb")===0) renderPAtb();
   else if(hash.indexOf("#/pdose")===0) renderPDose();
   else if(hash.indexOf("#/phidrat")===0) renderHidrat();
   else if(hash.indexOf("#/pbroselow")===0) renderBroselow();
