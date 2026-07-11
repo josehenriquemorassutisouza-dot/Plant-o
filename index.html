@@ -478,6 +478,40 @@ tr:last-child td{border-bottom:0}
 .pn-tl-now{font-weight:600}
 .pn-tl-now .pn-tl-dot{color:#2a7a4a}
 .pn-tl-done{opacity:.5}
+
+.pn-inrow{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:flex-end}
+.pn-inrow label{flex:1;min-width:120px;font-size:12px;display:flex;flex-direction:column;gap:3px;color:#555}
+.pn-inrow input{padding:9px;border:1px solid var(--bd,#ccc);border-radius:8px;font-size:15px;box-sizing:border-box;width:100%}
+.pn-modes button{font-size:13px}
+.pn-igbig{font-size:20px;font-weight:700;background:#eef2ff;color:#243a72;padding:10px 12px;border-radius:8px;margin-bottom:6px}
+.pn-dpp{font-size:12px;color:#555;margin-bottom:10px;line-height:1.5}
+.pn-cmp{background:#f7f8fb;border:1px solid var(--bd,#e2e2e2);border-radius:8px;padding:10px;margin-bottom:10px;font-size:13px;line-height:1.5}
+.pn-cmp-d{margin-top:6px;padding:6px 8px;border-radius:6px;font-size:12px}
+.pn-cmp-d.pn-ok{background:#e3f5e9;color:#1a7a3a}
+.pn-cmp-d.pn-warn{background:#fce8b2;color:#7a5600}
+.pn-tools{margin:10px 0;border:1px solid var(--bd,#e2e2e2);border-radius:8px;padding:8px 10px}
+.pn-tools summary{cursor:pointer;font-weight:600;font-size:14px}
+.pn-tools .pn-inrow{margin-top:8px}
+.pn-toolres{font-size:13px;padding-bottom:9px;min-width:120px}
+
+.pn-cons{border:1px solid var(--bd,#e2e2e2);border-radius:8px;overflow:hidden;margin-bottom:6px}
+.pn-cons-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--bd,#eee);font-size:13px}
+.pn-cons-row:last-child{border-bottom:none}
+.pn-cons-d{font-weight:600;min-width:92px}
+.pn-cons-ig{flex:1;color:#444}
+.pn-cons-b{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600}
+.pn-b-mensal{background:#e3eefa;color:#1a4f8a}
+.pn-b-quinzenal{background:#fef3d7;color:#8a6100}
+.pn-b-semanal{background:#fde8e8;color:#b1221f}
+
+.pn-cons-next{background:#eaf6ee}
+.pn-cons-next .pn-cons-d{color:#1a7a3a}
+.pn-cons-past{opacity:.5}
+
+.pn-fold{margin:8px 0;border:1px solid var(--bd,#e2e2e2);border-radius:8px;padding:6px 10px}
+.pn-fold>summary{cursor:pointer;font-weight:600;font-size:14px;padding:2px 0;list-style:revert}
+.pn-fold[open]>summary{margin-bottom:8px}
+.pn-fold .pn-tl{margin-top:0}
 </style>
 <script>window.goatcounter={path:function(){return location.pathname+(location.hash||"#/")}};</script><script data-goatcounter="https://cerezuapp.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -768,7 +802,7 @@ function renderHome(){
   if(faixa==="gestante"){
     h += '<div class="eyebrow">Gestante / lactante</div>';
     h += '<button class="row" data-go="#/gestlact"><div class="rt"><span class="pill">Rx</span><span>Medicações — o que pode</span></div><div class="rp">Informe as semanas (ou lactação) e veja, por queixa, a 1ª escolha que pode e o que evitar por trimestre.</div></button>';
-    h += '<button class="row" data-go="#/prenatal"><div class="rt"><span class="pill">PN</span><span>Controle de pré-natal</span></div><div class="rp">Digite a idade gestacional e veja exames, suplementos, vacinas e condutas do momento + a linha do tempo (MS/FEBRASGO).</div></button>';
+    h += '<button class="row" data-go="#/prenatal"><div class="rt"><span class="pill">PN</span><span>Calculadora obstétrica + pré-natal</span></div><div class="rp">IG (semanas+dias) e DPP por DUM/USG/comparação, marcos gestacionais e condutas do momento (MS/FEBRASGO).</div></button>';
     h += '<div class="note">Na UPA, a gestante é atendida para queixas <b>sintomáticas</b> (náusea, dor, febre, ITU, tosse). Sangramento, dor abdominal, contrações, hipertensão/pré-eclâmpsia, redução de movimentos fetais ou trabalho de parto → estabilizar e encaminhar à <b>referência obstétrica</b>.</div>';
     view.innerHTML = h; return;
   }
@@ -3972,24 +4006,40 @@ function glOutRender(id,mode,wk){
 var PRENATAL=[{"c": "Exame", "n": "Exames de 1ª consulta", "i": 0, "f": 13, "d": "Hemograma, tipagem ABO/Rh (+ Coombs indireto se Rh−), glicemia de jejum, VDRL, HIV, HBsAg, hepatite C, toxoplasmose IgG/IgM, EAS + urocultura, eletroforese de Hb, protoparasitológico, colpocitologia se indicado; avaliação odontológica."}, {"c": "Exame", "n": "USG 1º trimestre (datação)", "i": 11, "f": 14, "d": "Datação da IG, gemelaridade, translucência nucal. MS: US até 14 sem para datar a idade gestacional."}, {"c": "Exame", "n": "USG morfológico (2º tri)", "i": 18, "f": 22, "d": "Rastreio de malformações fetais. Situação mínima: US entre 18 e 22 semanas."}, {"c": "Exame", "n": "TOTG 75g (rastreio de DMG)", "i": 24, "f": 28, "d": "Se a glicemia de jejum das primeiras 20 sem foi < 92 mg/dL. Jejum, 60 e 120 min; ≥1 valor alterado = diabetes gestacional."}, {"c": "Exame", "n": "Repetir exames (3º tri)", "i": 28, "f": 30, "d": "Hemograma, VDRL, HIV, EAS + urocultura, HBsAg; toxoplasmose se IgG− (repetir trimestral)."}, {"c": "Exame", "n": "Cultura estreptococo B (GBS)", "i": 35, "f": 37, "d": "Swab anovaginal entre 35 e 37 sem. Positivo → profilaxia antibiótica intraparto."}, {"c": "Suplemento", "n": "Ácido fólico 0,4 mg/dia", "i": 0, "f": 12, "d": "Do início (idealmente pré-concepção) até o fim do 1º trimestre (12 sem). Previne defeitos do tubo neural."}, {"c": "Suplemento", "n": "Sulfato ferroso 40 mg de Fe/dia", "i": 20, "f": 42, "d": "A partir da 20ª semana até o fim da gestação (1 drágea de 200 mg = 40 mg de ferro elementar). Profilaxia de anemia; ajustar se anemia diagnosticada."}, {"c": "Suplemento", "n": "Carbonato de cálcio 1.250 mg 2x/dia", "i": 12, "f": 42, "d": "500 mg de cálcio elementar 2x/dia após as refeições, da 12ª semana até o parto (recomendação do MS; sobretudo se baixa ingesta de cálcio)."}, {"c": "Medicação", "n": "AAS 100 mg/dia à noite — SE risco de pré-eclâmpsia", "i": 12, "f": 36, "d": "Iniciar entre 12 e 16 sem (antes de 16), manter até 36 sem. Indicado se ≥1 fator de ALTO risco (PE prévia, HAS crônica, DM, doença renal, doença autoimune, gestação múltipla) OU ≥2 fatores moderados."}, {"c": "Vacina", "n": "dTpa", "i": 20, "f": 36, "d": "1 dose a cada gestação, a partir da 20ª semana (ideal 27–36 sem). Protege o recém-nascido da coqueluche."}, {"c": "Vacina", "n": "Influenza (gripe)", "i": 0, "f": 42, "d": "Dose única, em qualquer idade gestacional (durante a campanha/sazonalidade)."}, {"c": "Vacina", "n": "Hepatite B (se não vacinada)", "i": 0, "f": 42, "d": "3 doses no esquema 0-1-6 meses, se suscetível. Iniciar o quanto antes."}, {"c": "Vacina", "n": "COVID-19", "i": 0, "f": 42, "d": "Qualquer trimestre, conforme o calendário do MS."}];
 
 function pnCatCls(c){ return c==="Exame"?"exame":(c==="Suplemento"?"supl":(c==="Medicação"?"med":"vac")); }
-function pnOutRender(id,wk){
-  var el=document.getElementById(id); if(!el) return;
-  if(!wk||wk<=0){ el.innerHTML='<div class="note">Digite as semanas de idade gestacional para ver as condutas do momento.</div>'; return; }
-  if(wk>42) wk=42;
-  var tri = wk<=13?'1º trimestre':(wk<=27?'2º trimestre':'3º trimestre');
-  var freq = wk<28?'consultas mensais':(wk<=36?'consultas quinzenais':'consultas semanais');
-  var h='<div class="pn-tri">'+tri+' · '+freq+' · '+wk+' sem</div>';
-  var agora=PRENATAL.filter(function(x){return x.i<=wk&&wk<=x.f;});
+function pnV(id){ var e=view.querySelector("#"+id); return e?e.value:""; }
+function pnI(id){ return parseInt(pnV(id))||0; }
+function pnParse(s){ if(!s) return null; var p=String(s).split("-"); if(p.length!==3) return null; var d=new Date(+p[0],+p[1]-1,+p[2],12,0,0,0); return isNaN(d)?null:d; }
+function pnToday(){ var t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate(),12,0,0,0); }
+function pnAdd(d,n){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n,12,0,0,0); }
+function pnDiff(a,b){ return Math.round((a-b)/86400000); }
+function pnFmtD(d){ return d?d.toLocaleDateString('pt-BR'):'—'; }
+function pnFmtIG(days){ var neg=days<0; var a=Math.abs(days); var w=Math.floor(a/7), d=a%7; var s=w+' semana'+(w===1?'':'s'); if(d>0) s+=' e '+d+' dia'+(d===1?'':'s'); return (neg?'-':'')+s; }
+function pnThresh(days){ if(days<=62)return 5; if(days<=111)return 7; if(days<=153)return 10; if(days<=195)return 14; return 21; }
+var PN_EDUM=null;
+
+function pnFromDum(ev){ var dum=pnParse(pnV("pn-dum")); if(!dum) return null; return {days:pnDiff(ev,dum), dpp:pnAdd(dum,280), edum:dum, met:"DUM"}; }
+function pnFromUsg(ev){ var ud=pnParse(pnV("pn-usgd")); if(!ud) return null; var ig=pnI("pn-usgw")*7+pnI("pn-usgdd"); var edum=pnAdd(ud,-ig); return {days:pnDiff(ev,edum), dpp:pnAdd(edum,280), edum:edum, met:"USG"}; }
+
+function pnToolsRender(){
+  if(!PN_EDUM) return;
+  var a=view.querySelector("#pn-tool-a"); var b=view.querySelector("#pn-tool-b");
+  if(a){ var td=pnParse(pnV("pn-tdate")); a.textContent = td ? pnFmtIG(pnDiff(td,PN_EDUM)) : '—'; }
+  if(b){ var w=pnI("pn-tw"), d=pnI("pn-td"); b.textContent = (w>0||d>0) ? pnFmtD(pnAdd(PN_EDUM, w*7+d)) : '—'; }
+}
+
+function pnBadgeItems(wkc){
+  var h='';
+  var agora=PRENATAL.filter(function(x){return x.i<=wkc&&wkc<=x.f;});
   h+='<div class="pn-sec"><div class="pn-h">📌 Fazer nesta consulta</div>';
   if(!agora.length){ h+='<div class="pn-empty">Nada específico desta janela — manter a rotina da consulta.</div>'; }
   agora.forEach(function(x){
     var st;
-    if(x.c==="Suplemento"||x.c==="Medicação"){ st = (wk<=x.i+1)?{t:"iniciar",k:"go"}:{t:"manter",k:"ok"}; }
-    else { st = (wk>=x.f-1)?{t:"última janela",k:"warn"}:{t:"realizar",k:"go"}; }
+    if(x.c==="Suplemento"||x.c==="Medicação"){ st = (wkc<=x.i+1)?{t:"iniciar",k:"go"}:{t:"manter",k:"ok"}; }
+    else { st = (wkc>=x.f-1)?{t:"última janela",k:"warn"}:{t:"realizar",k:"go"}; }
     h+='<div class="pn-item"><div class="pn-it-top"><span class="pn-cat pn-'+pnCatCls(x.c)+'">'+x.c+'</span> <b>'+esc(x.n)+'</b> <span class="pn-badge pn-'+st.k+'">'+st.t+'</span></div><div class="pn-det">'+esc(x.d)+'</div></div>';
   });
   h+='</div>';
-  var cheg=PRENATAL.filter(function(x){return x.i>wk&&x.i<=wk+4;});
+  var cheg=PRENATAL.filter(function(x){return x.i>wkc&&x.i<=wkc+4;});
   if(cheg.length){
     h+='<div class="pn-sec"><div class="pn-h">🔜 Chegando (próximas semanas)</div>';
     cheg.forEach(function(x){ h+='<div class="pn-item"><div class="pn-it-top"><span class="pn-cat pn-'+pnCatCls(x.c)+'">'+x.c+'</span> <b>'+esc(x.n)+'</b> <span class="pn-badge pn-soon">a partir de '+x.i+' sem</span></div></div>'; });
@@ -3997,28 +4047,107 @@ function pnOutRender(id,wk){
   }
   h+='<div class="pn-sec"><div class="pn-h">🩺 Em toda consulta</div><div class="pn-det">PA, peso/IMC, altura uterina, BCF, movimentos fetais (após ~20 sem), edema, adesão e resultados de exames.</div></div>';
   h+='<div class="pn-alert">🚩 Sinais de alerta (orientar a gestante a procurar atendimento): cefaleia forte, visão turva ou pontos pretos, dor epigástrica, sangramento ou perda de líquido, contrações fortes e frequentes, febre, ardor ao urinar e redução dos movimentos fetais.</div>';
-  if(wk>=36){ h+='<div class="pn-sec"><div class="pn-h">👶 36+ semanas</div><div class="pn-det">Construir o plano de parto, orientar visita à maternidade de referência e checar a apresentação fetal.</div></div>'; }
+  if(wkc>=36){ h+='<div class="pn-sec"><div class="pn-h">👶 36+ semanas</div><div class="pn-det">Construir o plano de parto, orientar visita à maternidade de referência e checar a apresentação fetal.</div></div>'; }
   var tl=PRENATAL.slice().sort(function(a,b){return a.i-b.i;});
-  h+='<div class="pn-sec"><div class="pn-h">🗓️ Linha do tempo</div><div class="pn-tl">';
+  h+='<details class="pn-fold"><summary>🗓️ Linha do tempo (condutas)</summary><div class="pn-tl">';
   tl.forEach(function(x){
-    var s = (x.f<wk)?{t:"✓",k:"done"}:((x.i<=wk&&wk<=x.f)?{t:"●",k:"now"}:{t:"○",k:"next"});
+    var s = (x.f<wkc)?{t:"✓",k:"done"}:((x.i<=wkc&&wkc<=x.f)?{t:"●",k:"now"}:{t:"○",k:"next"});
     var jan = (x.i===0&&x.f>=42)?'toda a gestação':(x.i+'–'+(x.f>=42?'parto':x.f+' sem'));
     h+='<div class="pn-tl-item pn-tl-'+s.k+'"><span class="pn-tl-dot">'+s.t+'</span><span class="pn-tl-wk">'+jan+'</span><span class="pn-tl-n">'+esc(x.n)+'</span></div>';
   });
-  h+='</div></div>';
-  el.innerHTML=h;
+  h+='</div></details>';
+  return h;
 }
+
+function pnConsultasHTML(edum, cur, ancDate, ev){
+  var rows=[]; var ig=cur; var guard=0;
+  while(ig < 41*7 && guard<25){
+    var wk=ig/7;
+    var interval = wk<28?4:(wk<36?2:1);
+    ig += interval*7;
+    if(ig > 41*7) break;
+    var w2=ig/7;
+    var band = w2<28?'mensal':(w2<36?'quinzenal':'semanal');
+    rows.push({d:pnAdd(edum,ig), ig:ig, band:band});
+    guard++;
+  }
+  if(!rows.length) return '';
+  var nextIdx=-1;
+  for(var i=0;i<rows.length;i++){ if(pnDiff(rows[i].d, ev)>=0){ nextIdx=i; break; } }
+  var h='<details class="pn-fold"><summary>📆 Próximas consultas (MS)</summary>';
+  if(ancDate) h+='<div class="pn-det" style="margin-bottom:6px">Ancorada na última consulta em '+pnFmtD(ancDate)+' (IG '+pnFmtIG(cur)+' naquele dia).</div>';
+  h+='<div class="pn-cons">';
+  rows.forEach(function(r,i){
+    var past = pnDiff(r.d, ev)<0;
+    var isnext = (i===nextIdx);
+    h+='<div class="pn-cons-row'+(isnext?' pn-cons-next':'')+(past?' pn-cons-past':'')+'"><span class="pn-cons-d">'+pnFmtD(r.d)+(isnext?' •':'')+'</span><span class="pn-cons-ig">'+pnFmtIG(r.ig)+'</span><span class="pn-cons-b pn-b-'+r.band+'">'+r.band+'</span></div>';
+  });
+  h+='</div><div class="pn-det">Frequência do MS: mensal até 28 sem, quinzenal 28–36 sem, semanal a partir de 36 sem. '+(nextIdx>=0?'Próxima consulta destacada (•).':'')+' Datas sugeridas — ajuste conforme o serviço.</div></details>';
+  return h;
+}
+
+function pnRender(){
+  var mode=store.get("pn-mode")||"sem";
+  var ev=pnParse(pnV("pn-eval"))||pnToday();
+  var out=view.querySelector("#pn-out"); if(!out) return;
+  var hint='<div class="note">Preencha os campos acima para calcular a idade gestacional.</div>';
+  var eff=null, cmpHtml='';
+  if(mode==="cmp"){
+    var dm=pnFromDum(ev), ug=pnFromUsg(ev);
+    if(!dm&&!ug){ out.innerHTML=hint; PN_EDUM=null; return; }
+    if(dm&&ug){
+      var diff=Math.abs(dm.days-ug.days), th=pnThresh(ug.days), concord=diff<=th;
+      cmpHtml='<div class="pn-cmp"><div><b>Pela DUM:</b> '+pnFmtIG(dm.days)+' · DPP '+pnFmtD(dm.dpp)+'</div><div><b>Pela USG:</b> '+pnFmtIG(ug.days)+' · DPP '+pnFmtD(ug.dpp)+'</div><div class="pn-cmp-d pn-'+(concord?'ok':'warn')+'">Diferença: '+diff+' dia'+(diff===1?'':'s')+' (limite do método: '+th+') — '+(concord?'datas concordantes; datação mantida.':'discrepância: a USG do 1º trimestre costuma ser mais precisa. Confirme a datação oficial pelo protocolo.')+'</div></div>';
+      eff=ug;
+    } else { eff=dm||ug; }
+  } else if(mode==="dum"){ eff=pnFromDum(ev); }
+  else if(mode==="usg"){ eff=pnFromUsg(ev); }
+  else { var w=pnI("pn-w"),d=pnI("pn-d"); if(w>0||d>0){ var ig=w*7+d; eff={days:ig, dpp:pnAdd(pnAdd(ev,-ig),280), edum:pnAdd(ev,-ig), met:"IG informada"}; } }
+  if(!eff){ out.innerHTML=hint; PN_EDUM=null; return; }
+  PN_EDUM=eff.edum;
+  var days=eff.days, wk=Math.floor(days/7), wkc=Math.max(0,Math.min(wk,42));
+  var tri = wkc<=13?'1º trimestre':(wkc<=27?'2º trimestre':'3º trimestre');
+  var freq = wkc<28?'consultas mensais':(wkc<=36?'consultas quinzenais':'consultas semanais');
+  var toDpp=pnDiff(eff.dpp, ev);
+  var h='<div class="pn-igbig">'+pnFmtIG(days)+(wk>=42?' · pós-datismo':'')+'</div>';
+  h+='<div class="pn-dpp"><b>DPP:</b> '+pnFmtD(eff.dpp)+' · '+(toDpp>=0?'faltam '+toDpp+' dia'+(toDpp===1?'':'s'):Math.abs(toDpp)+' dia(s) além da DPP')+' · '+tri+' · '+freq+' · datação: '+eff.met+'</div>';
+  h+=cmpHtml;
+  var mk=[12,20,24,28,32,36,37,40,41];
+  h+='<details class="pn-fold"><summary>📅 Marcos gestacionais</summary><div class="pn-tl">';
+  mk.forEach(function(W){ var dt=pnAdd(eff.edum,W*7); var passed=wk>=W; h+='<div class="pn-tl-item pn-tl-'+(passed?'done':(wk>=W-1?'now':'next'))+'"><span class="pn-tl-dot">'+(passed?'✓':'○')+'</span><span class="pn-tl-wk">'+W+' sem</span><span class="pn-tl-n">'+pnFmtD(dt)+(W===40?' (DPP)':'')+'</span></div>'; });
+  h+='</div></details>';
+  var pnLc=pnParse(pnV("pn-lastc")); var pnAnc=pnLc?pnDiff(pnLc,eff.edum):days;
+  h+=pnConsultasHTML(eff.edum, pnAnc, pnLc, ev);
+  h+='<details class="pn-tools"><summary>🧮 Ferramentas de data</summary><div class="pn-inrow"><label>IG numa data<input id="pn-tdate" type="date" value="'+(store.get("pn-tdate")||"")+'"></label><div class="pn-toolres">IG: <b id="pn-tool-a">—</b></div></div><div class="pn-inrow"><label>Data ao atingir — semanas<input id="pn-tw" type="number" inputmode="numeric" min="0" max="45" placeholder="ex.: 40" value="'+(store.get("pn-tw")||"")+'"></label><label>dias<input id="pn-td" type="number" inputmode="numeric" min="0" max="6" placeholder="0" value="'+(store.get("pn-td")||"")+'"></label><div class="pn-toolres">Data: <b id="pn-tool-b">—</b></div></div></details>';
+  h+=pnBadgeItems(wkc);
+  out.innerHTML=h;
+  ["pn-tdate","pn-tw","pn-td"].forEach(function(id){ var e=view.querySelector("#"+id); if(e){ e.addEventListener("input",function(){ store.set(id,e.value); pnToolsRender(); }); } });
+  pnToolsRender();
+}
+
 function renderPrenatal(){
-  var wk0=store.get("pn-wk")||"";
+  var mode=store.get("pn-mode")||"sem";
+  var evv=store.get("pn-eval")|| (function(){var t=pnToday();return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0");})();
   var h='<button class="back" data-go="#/">‹ Início</button>';
-  h+='<div class="fhead"><h1>Controle de pré-natal</h1></div>';
-  h+='<div class="sclead">Informe a idade gestacional e veja o que fazer agora (exames, suplementos, vacinas, condutas) e a linha do tempo. Baseado em MS e FEBRASGO — para gestação de risco habitual; confira e individualize.</div>';
-  h+='<div class="em-in"><label>Idade gestacional<input id="pn-wk" type="number" inputmode="numeric" step="1" min="0" max="42" placeholder="semanas" value="'+wk0+'"><span class="isr-unit">sem</span></label></div>';
+  h+='<div class="fhead"><h1>Calculadora obstétrica + pré-natal</h1></div>';
+  h+='<div class="sclead">Calcule a IG (semanas + dias) e a DPP por DUM, ultrassom ou IG informada, veja os marcos gestacionais e as condutas do momento. Base MS/FEBRASGO; risco habitual — individualize. Sem guardar dados.</div>';
+  h+='<div class="pn-inrow"><label>Data da avaliação (hoje)<input id="pn-eval" type="date" value="'+evv+'"></label></div>';
+  h+='<div class="pn-inrow"><label>Última consulta feita — opcional (ancora a agenda)<input id="pn-lastc" type="date" value="'+(store.get("pn-lastc")||"")+'"></label></div>';
+  h+='<div class="faixa pn-modes"><button class="'+(mode==="sem"?"on":"")+'" data-pnmode="sem">IG</button><button class="'+(mode==="dum"?"on":"")+'" data-pnmode="dum">DUM</button><button class="'+(mode==="usg"?"on":"")+'" data-pnmode="usg">USG</button><button class="'+(mode==="cmp"?"on":"")+'" data-pnmode="cmp">DUM×USG</button></div>';
+  if(mode==="sem"){
+    h+='<div class="pn-inrow"><label>Semanas<input id="pn-w" type="number" inputmode="numeric" min="0" max="45" placeholder="ex.: 25" value="'+(store.get("pn-w")||"")+'"></label><label>Dias<input id="pn-d" type="number" inputmode="numeric" min="0" max="6" placeholder="0" value="'+(store.get("pn-d")||"")+'"></label></div>';
+  } else if(mode==="dum"){
+    h+='<div class="pn-inrow"><label>Data da última menstruação (DUM)<input id="pn-dum" type="date" value="'+(store.get("pn-dum")||"")+'"></label></div>';
+  } else if(mode==="usg"){
+    h+='<div class="pn-inrow"><label>Data do ultrassom<input id="pn-usgd" type="date" value="'+(store.get("pn-usgd")||"")+'"></label></div><div class="pn-inrow"><label>IG no ultrassom — semanas<input id="pn-usgw" type="number" inputmode="numeric" min="0" max="42" placeholder="ex.: 13" value="'+(store.get("pn-usgw")||"")+'"></label><label>dias<input id="pn-usgdd" type="number" inputmode="numeric" min="0" max="6" placeholder="0" value="'+(store.get("pn-usgdd")||"")+'"></label></div>';
+  } else {
+    h+='<div class="pn-inrow"><label>DUM<input id="pn-dum" type="date" value="'+(store.get("pn-dum")||"")+'"></label></div><div class="pn-inrow"><label>Data do ultrassom<input id="pn-usgd" type="date" value="'+(store.get("pn-usgd")||"")+'"></label></div><div class="pn-inrow"><label>IG no USG — semanas<input id="pn-usgw" type="number" inputmode="numeric" min="0" max="42" placeholder="ex.: 10" value="'+(store.get("pn-usgw")||"")+'"></label><label>dias<input id="pn-usgdd" type="number" inputmode="numeric" min="0" max="6" placeholder="0" value="'+(store.get("pn-usgdd")||"")+'"></label></div>';
+  }
   h+='<div id="pn-out"></div>';
   view.innerHTML=h; scrollTo(0,0);
-  var rec=function(){ var wk=0; var e=view.querySelector("#pn-wk"); if(e) wk=parseFloat(e.value)||0; if(wk>0) store.set("pn-wk",String(wk)); pnOutRender("pn-out",wk); };
-  var wkEl=view.querySelector("#pn-wk"); if(wkEl) wkEl.addEventListener("input",rec);
-  rec();
+  view.querySelectorAll("[data-pnmode]").forEach(function(b){ b.addEventListener("click",function(){ store.set("pn-mode",b.getAttribute("data-pnmode")); renderPrenatal(); }); });
+  ["pn-eval","pn-lastc","pn-w","pn-d","pn-dum","pn-usgd","pn-usgw","pn-usgdd"].forEach(function(id){ var e=view.querySelector("#"+id); if(e){ e.addEventListener("input",function(){ store.set(id,e.value); pnRender(); }); } });
+  pnRender();
 }
 
 function renderGestLact(){
