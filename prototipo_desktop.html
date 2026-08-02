@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plantão — protótipo desktop</title>
+<style>
+:root{
+  /* superfícies */
+  --bg:#eef1f6; --surface:#ffffff; --surface-2:#f6f8fb; --surface-3:#eef2f7;
+  --ink:#1a2733; --ink-2:#5a6b7b; --ink-3:#8a99a8; --line:#e2e8f0; --line-2:#d3dbe6;
+  /* semânticas clínicas */
+  --primary:#0e7c7b; --primary-ink:#0a5b5a; --primary-soft:#dcf0ef;
+  --rf:#c0362c; --rf-ink:#8f2620; --rf-soft:#fbe9e7;
+  --casa:#1f7a4d; --casa-ink:#155d3a; --casa-soft:#e4f3ea;
+  --intern:#3a51c0; --intern-ink:#2b3d94; --intern-soft:#e8ebfa;
+  --warn:#96650a; --warn-ink:#7a520a; --warn-soft:#faf0d6;
+  --shadow-sm:0 1px 2px rgba(20,40,60,.05);
+  --shadow:0 1px 2px rgba(20,40,60,.06),0 4px 16px rgba(20,40,60,.06);
+  --shadow-lg:0 8px 30px rgba(20,40,60,.12);
+  --r-sm:7px; --r:11px; --r-lg:16px;
+  --sidebar-w:284px;
+}
+[data-theme="dark"]{
+  --bg:#0d141d; --surface:#161f2b; --surface-2:#1b2530; --surface-3:#212d3a;
+  --ink:#e7eef5; --ink-2:#9db0c1; --ink-3:#6d7f90; --line:#263240; --line-2:#31404f;
+  --primary:#2ec5c0; --primary-ink:#8fe6e2; --primary-soft:#10312f;
+  --rf:#f0685d; --rf-ink:#ffb4ac; --rf-soft:#361b18;
+  --casa:#4fc287; --casa-ink:#a7e8c6; --casa-soft:#12301f;
+  --intern:#8092f2; --intern-ink:#c0c9fb; --intern-soft:#1a2242;
+  --warn:#e0a83c; --warn-ink:#f3d18a; --warn-soft:#33280f;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+  --shadow-lg:0 10px 34px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--ink); font-size:14px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+button{font-family:inherit;cursor:pointer}
+h1,h2,h3{margin:0;line-height:1.25}
+
+/* ===== SHELL ===== */
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
+.sidebar{
+  position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 18px 12px}
+.brand-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-ink));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;box-shadow:var(--shadow-sm)}
+.brand-name{font-weight:750;letter-spacing:.2px}
+.brand-sub{font-size:11px;color:var(--ink-3);margin-top:-1px}
+.side-search{margin:2px 14px 12px;position:relative}
+.side-search input{width:100%;padding:9px 11px 9px 32px;border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--surface-2);color:var(--ink);font-size:13.5px}
+.side-search input:focus{outline:2px solid var(--primary);outline-offset:-1px;border-color:var(--primary)}
+.side-search .mag{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-3);font-size:14px}
+.side-search kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;background:var(--surface)}
+.faixas{display:flex;gap:5px;padding:0 14px 12px}
+.faixas button{flex:1;padding:7px 4px;border:1px solid var(--line-2);background:transparent;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.faixas button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.nav{flex:1;overflow-y:auto;padding:4px 8px 20px}
+.nav-group{margin-top:10px}
+.nav-label{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-3);padding:6px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r-sm);color:var(--ink-2);font-size:13.5px;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface-3);color:var(--ink)}
+.nav-item.on{background:var(--primary-soft);color:var(--primary-ink);font-weight:600}
+[data-theme="dark"] .nav-item.on{color:var(--primary-ink)}
+.nav-item .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5;flex:none}
+.side-foot{padding:10px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-3)}
+
+/* ===== MAIN ===== */
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 26px;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.crumb{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.crumb b{color:var(--ink);font-weight:650}
+.crumb .sep{color:var(--ink-3)}
+.tb-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);display:flex;align-items:center;justify-content:center;font-size:15px}
+.icon-btn:hover{color:var(--ink);border-color:var(--line-2);background:var(--surface-2)}
+.content{padding:24px 26px 60px;max-width:1120px;width:100%}
+
+/* headers de página */
+.page-h{margin-bottom:16px}
+.page-h .eyebrow{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--primary);margin-bottom:5px}
+.page-h h1{font-size:23px;font-weight:750;letter-spacing:-.2px}
+.page-h .lead{color:var(--ink-2);margin-top:6px;font-size:14px}
+
+/* ===== CARDS / GRID ===== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tile{display:block;padding:14px 15px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);text-align:left;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}
+.tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--line-2)}
+.tile .ic{width:34px;height:34px;border-radius:9px;background:var(--primary-soft);color:var(--primary-ink);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:9px}
+.tile h3{font-size:14.5px;font-weight:650}
+.tile p{margin:3px 0 0;color:var(--ink-3);font-size:12px}
+.tile .count{font-size:11px;color:var(--ink-3);margin-top:8px}
+
+/* ===== FICHA ===== */
+.section{margin:18px 0}
+.section-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);margin:0 0 9px}
+.section-h .num{width:19px;height:19px;border-radius:5px;background:var(--surface-3);color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+.banner-rf{border:1px solid var(--rf);background:var(--rf-soft);border-radius:var(--r);padding:13px 15px;display:flex;gap:11px}
+.banner-rf .flag{color:var(--rf);font-size:17px;line-height:1.4}
+.banner-rf .t{font-weight:700;color:var(--rf-ink);margin-bottom:2px;font-size:13px}
+.banner-rf .b{color:var(--ink);font-size:13px}
+[data-theme="dark"] .banner-rf .b{color:var(--rf-ink)}
+
+table.clin{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+table.clin th{background:var(--surface-3);text-align:left;padding:9px 12px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-2);border-bottom:1px solid var(--line)}
+table.clin td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.clin tr:last-child td{border-bottom:none}
+table.clin tbody tr:hover{background:var(--surface-2)}
+.gp{display:inline-block;font-weight:800;width:22px;height:22px;line-height:22px;text-align:center;border-radius:6px;font-size:12px}
+.gp-a{background:var(--casa-soft);color:var(--casa-ink)} .gp-b{background:var(--warn-soft);color:var(--warn-ink)}
+.gp-c{background:var(--rf-soft);color:var(--rf-ink)} .gp-d{background:var(--rf);color:#fff}
+
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini-card{border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;background:var(--surface)}
+.mini-card h4{margin:0 0 7px;font-size:13px;font-weight:700}
+.mini-card ul{margin:0;padding-left:17px;color:var(--ink-2);font-size:13px}
+.mini-card li{margin:3px 0}
+
+/* prescrições em colunas */
+.rx-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.rx{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.rx-head{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+.rx-unidade .rx-head{background:var(--primary-soft);color:var(--primary-ink)}
+.rx-casa .rx-head{background:var(--casa-soft);color:var(--casa-ink)}
+.rx-intern .rx-head{background:var(--intern-soft);color:var(--intern-ink)}
+.rx-body{padding:12px;font-size:12.5px;white-space:pre-wrap;color:var(--ink);flex:1;line-height:1.5}
+.rx-copy{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);border-radius:6px;padding:3px 8px}
+.rx-copy:hover{color:var(--primary-ink);border-color:var(--primary)}
+.drawer-cue{margin-top:13px;border:1px dashed var(--line-2);border-radius:var(--r);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;color:var(--ink-2);font-size:13px;background:var(--surface-2)}
+.btn{border:1px solid var(--primary);background:var(--primary);color:#fff;font-weight:600;font-size:13px;padding:7px 13px;border-radius:var(--r-sm)}
+.btn.ghost{background:transparent;color:var(--primary-ink);border-color:var(--line-2)}
+
+/* ===== CALCULADORA (2 colunas) ===== */
+.calc-grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm)}
+.panel h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);margin-bottom:12px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:4px;font-weight:600}
+.field input{width:100%;padding:9px 10px;border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--surface-2);color:var(--ink);font-size:14px}
+.field input:focus{outline:2px solid var(--primary);outline-offset:-1px;border-color:var(--primary)}
+.modes{display:flex;gap:5px;margin-bottom:13px}
+.modes button{flex:1;padding:7px 3px;border:1px solid var(--line-2);background:transparent;border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--ink-2)}
+.modes button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.ig-hero{background:linear-gradient(135deg,var(--primary-soft),var(--surface));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.ig-hero .ig{font-size:28px;font-weight:800;color:var(--primary-ink);letter-spacing:-.5px}
+.ig-hero .dpp{text-align:right}
+.ig-hero .dpp .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3)}
+.ig-hero .dpp .val{font-size:18px;font-weight:750}
+.meta-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--surface-3);color:var(--ink-2)}
+.cond{border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;margin-bottom:8px;background:var(--surface)}
+.cond .top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cat{font-size:10px;font-weight:700;padding:1px 7px;border-radius:7px}
+.cat-ex{background:var(--intern-soft);color:var(--intern-ink)} .cat-su{background:var(--casa-soft);color:var(--casa-ink)}
+.cat-va{background:var(--primary-soft);color:var(--primary-ink)} .cat-me{background:var(--rf-soft);color:var(--rf-ink)}
+.badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:7px;margin-left:auto}
+.b-go{background:var(--casa);color:#fff} .b-ok{background:var(--surface-3);color:var(--ink-2)} .b-warn{background:var(--warn-soft);color:var(--warn-ink)}
+.cond .det{font-size:12px;color:var(--ink-2);margin-top:4px}
+details.fold{border:1px solid var(--line);border-radius:var(--r);padding:8px 13px;margin-bottom:8px;background:var(--surface)}
+details.fold summary{cursor:pointer;font-weight:650;font-size:13.5px}
+
+.hidden{display:none}
+.note-inline{font-size:12px;color:var(--ink-3);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div><div class="brand-name">Plantão</div><div class="brand-sub">Apoio à decisão · UPA/PS</div></div>
+    </div>
+    <div class="side-search">
+      <span class="mag">⌕</span>
+      <input placeholder="Buscar doença, dose, ficha…"><kbd>/</kbd>
+    </div>
+    <div class="faixas">
+      <button class="on">Adulto</button><button>Pediátrico</button><button>Gestante</button>
+    </div>
+    <nav class="nav">
+      <div class="nav-group"><div class="nav-label">Cardiovascular</div>
+        <button class="nav-item"><span class="dot"></span>Crise hipertensiva</button>
+        <button class="nav-item"><span class="dot"></span>Insuficiência cardíaca</button>
+        <button class="nav-item"><span class="dot"></span>Fibrilação atrial</button>
+      </div>
+      <div class="nav-group"><div class="nav-label">Infectologia</div>
+        <button class="nav-item on"><span class="dot"></span>Dengue</button>
+        <button class="nav-item"><span class="dot"></span>Pneumonia (PAC)</button>
+        <button class="nav-item"><span class="dot"></span>Erisipela / celulite</button>
+        <button class="nav-item"><span class="dot"></span>ITU</button>
+      </div>
+      <div class="nav-group"><div class="nav-label">Respiratório</div>
+        <button class="nav-item"><span class="dot"></span>Asma / exacerbação</button>
+        <button class="nav-item"><span class="dot"></span>DPOC exacerbado</button>
+      </div>
+    </nav>
+    <div class="side-foot">93 fichas · 84 medicamentos · protótipo</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb">Adulto <span class="sep">›</span> Infectologia <span class="sep">›</span> <b id="crumb-page">Dengue</b></div>
+      <div class="tb-actions">
+        <button class="icon-btn" onclick="setView('ficha')" title="Ficha">▤</button>
+        <button class="icon-btn" onclick="setView('calc')" title="Calculadora">◫</button>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Tema">☾</button>
+      </div>
+    </header>
+
+    <!-- VIEW: FICHA -->
+    <div class="content" id="view-ficha">
+      <div class="page-h">
+        <div class="eyebrow">Infectologia · arbovirose</div>
+        <h1>Dengue</h1>
+        <div class="lead">Classificação por grupo (A–D) define conduta, hidratação e destino. Notificação compulsória.</div>
+      </div>
+
+      <div class="banner-rf">
+        <span class="flag">🚩</span>
+        <div><div class="t">Sinais de alarme (→ Grupo C)</div>
+        <div class="b">Dor abdominal intensa e contínua · vômitos persistentes · sangramento de mucosa · letargia/irritabilidade · hepatomegalia &gt; 2 cm · aumento progressivo do hematócrito. Choque ou disfunção grave → Grupo D.</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-h"><span class="num">2</span> Classificação e conduta</div>
+        <table class="clin">
+          <thead><tr><th style="width:60px">Grupo</th><th>Critérios</th><th style="width:38%">Conduta</th></tr></thead>
+          <tbody>
+            <tr><td><span class="gp gp-a">A</span></td><td>Sem sinais de alarme, sem comorbidade/risco, prova do laço negativa.</td><td>Manejo domiciliar · hidratação oral · sintomáticos · retorno se alarme.</td></tr>
+            <tr><td><span class="gp gp-b">B</span></td><td>Sem alarme, mas com risco (comorbidade, gestante, &lt;2a ou &gt;65a) ou laço positivo.</td><td>Observação, hemograma · hidratação oral supervisionada · reavaliar.</td></tr>
+            <tr><td><span class="gp gp-c">C</span></td><td>Presença de sinais de alarme.</td><td>Leito · hidratação IV 10 mL/kg/h · reavaliação em 1 h · hematócrito seriado.</td></tr>
+            <tr><td><span class="gp gp-d">D</span></td><td>Choque, desconforto respiratório, disfunção de órgão, sangramento grave.</td><td>Sala vermelha · expansão 20 mL/kg em 20 min · UTI.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-h"><span class="num">3</span> Anamnese e exame focados</div>
+        <div class="cols-2">
+          <div class="mini-card"><h4>Anamnese direcionada</h4><ul>
+            <li>Dia de doença (curva do 3º–6º dia = fase crítica)</li>
+            <li>Sinais de alarme ativos?</li>
+            <li>Diurese, aceitação de líquidos, vômitos</li>
+            <li>Comorbidades, gestação, uso de AINE/AAS</li>
+          </ul></div>
+          <div class="mini-card"><h4>Exame físico</h4><ul>
+            <li>PA, FC, perfusão, PA diferencial (&lt; 20 mmHg = alarme)</li>
+            <li>Prova do laço; pesquisa de sangramento</li>
+            <li>Abdome (dor, hepatomegalia), estado de consciência</li>
+            <li>Sinais de extravasamento (ascite, derrame)</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-h"><span class="num">5</span> Prescrição por cenário</div>
+        <div class="rx-cols">
+          <div class="rx rx-unidade"><div class="rx-head">Unidade (PS/UPA) <button class="rx-copy">⧉ Copiar</button></div>
+            <div class="rx-body">Dipirona 500 mg ———— 1 g VO/IV se dor ou febre, até 6/6h.
+Soro de reidratação oral conforme aceitação.
+Evitar AINE e AAS.
+Hemograma se Grupo B.</div></div>
+          <div class="rx rx-casa"><div class="rx-head">Casa (alta) <button class="rx-copy">⧉ Copiar</button></div>
+            <div class="rx-body">Paracetamol 750 mg ———— 1 comp VO de 6/6h se dor/febre.
+Hidratação oral abundante (metas por peso).
+Retornar se qualquer sinal de alarme.
+Reavaliação em 24–48 h.</div></div>
+          <div class="rx rx-intern"><div class="rx-head">Internação <button class="rx-copy">⧉ Copiar</button></div>
+            <div class="rx-body">Hidratação IV cristaloide 10 mL/kg/h (Grupo C).
+Hematócrito seriado + reavaliação em 1 h.
+Dipirona 1 g IV se dor/febre.
+Monitorização; acionar sala vermelha se D.</div></div>
+        </div>
+        <div class="drawer-cue"><span>➕ Adicionar medicamentos à receita (gaveta com 84 itens)</span><button class="btn ghost">Abrir</button></div>
+      </div>
+    </div>
+
+    <!-- VIEW: CALCULADORA -->
+    <div class="content hidden" id="view-calc">
+      <div class="page-h">
+        <div class="eyebrow">Gestante · ferramenta</div>
+        <h1>Calculadora obstétrica + pré-natal</h1>
+        <div class="lead">IG em semanas + dias e DPP por DUM, USG ou comparação. Base MS/FEBRASGO. Sem guardar dados.</div>
+      </div>
+      <div class="calc-grid">
+        <div class="panel">
+          <h3>Dados</h3>
+          <div class="field"><label>Data da avaliação (hoje)</label><input type="date" value="2026-07-12"></div>
+          <div class="field"><label>Última consulta — opcional (ancora a agenda)</label><input type="date"></div>
+          <div class="modes"><button>IG</button><button class="on">DUM</button><button>USG</button><button>DUM×USG</button></div>
+          <div class="field"><label>Data da última menstruação</label><input type="date" value="2026-01-20"></div>
+          <p class="note-inline">Troque o método nas abas acima. Nada é enviado ou salvo.</p>
+        </div>
+        <div>
+          <div class="ig-hero">
+            <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3)">Idade gestacional</div><div class="ig mono">25 sem 1 d</div></div>
+            <div class="dpp"><div class="lbl">DPP</div><div class="val mono">27/10/2026</div></div>
+          </div>
+          <div class="meta-row"><span class="chip">2º trimestre</span><span class="chip">consultas mensais</span><span class="chip">faltam 107 dias</span><span class="chip">datação: DUM</span></div>
+
+          <div class="section-h"><span class="num">▸</span> Fazer nesta consulta</div>
+          <div class="cond"><div class="top"><span class="cat cat-ex">Exame</span><b>TOTG 75g (rastreio de DMG)</b><span class="badge b-go">realizar</span></div><div class="det">Entre 24 e 28 sem. Jejum, 60 e 120 min; ≥1 valor alterado = DMG.</div></div>
+          <div class="cond"><div class="top"><span class="cat cat-su">Suplemento</span><b>Sulfato ferroso 40 mg de Fe/dia</b><span class="badge b-ok">manter</span></div><div class="det">A partir de 20 sem até o fim da gestação.</div></div>
+          <div class="cond"><div class="top"><span class="cat cat-va">Vacina</span><b>dTpa</b><span class="badge b-go">realizar</span></div><div class="det">A partir de 20 sem (ideal 27–36). Protege o RN da coqueluche.</div></div>
+
+          <details class="fold"><summary>📅 Marcos gestacionais</summary></details>
+          <details class="fold"><summary>📆 Próximas consultas (MS)</summary></details>
+          <details class="fold"><summary>🗓️ Linha do tempo de condutas</summary></details>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setView(v){
+  document.getElementById('view-ficha').classList.toggle('hidden', v!=='ficha');
+  document.getElementById('view-calc').classList.toggle('hidden', v!=='calc');
+  document.getElementById('crumb-page').textContent = v==='calc' ? 'Calculadora obstétrica' : 'Dengue';
+}
+function toggleTheme(){
+  var r=document.documentElement;
+  var dark = r.getAttribute('data-theme')==='dark';
+  r.setAttribute('data-theme', dark?'light':'dark');
+  document.getElementById('themeBtn').textContent = dark?'☾':'☀';
+}
+</script>
+</body>
+</html>
