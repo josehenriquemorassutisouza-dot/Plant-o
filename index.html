@@ -645,6 +645,11 @@ table tr:hover{background:color-mix(in srgb,var(--primary) 4%,var(--surface))}
   details>*{display:block!important}
 }
 
+
+/* selo Ctrl K na caixa de busca (abre a command palette) */
+.search{cursor:pointer}
+.search .q-kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3,var(--muted));border:1px solid var(--line);border-radius:5px;padding:2px 5px;margin-left:6px;flex:none;white-space:nowrap}
+
 </style>
 <script>window.goatcounter={path:function(){return location.pathname+(location.hash||"#/")}};</script><script data-goatcounter="https://cerezuapp.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -663,7 +668,7 @@ table tr:hover{background:color-mix(in srgb,var(--primary) 4%,var(--surface))}
       <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.2-3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <input id="q" type="search" inputmode="search" autocomplete="off" autocapitalize="none"
         spellcheck="false" placeholder="Buscar doença ou conduta…" aria-label="Buscar">
-      <button class="clr" id="clr" aria-label="Limpar busca">×</button>
+      <kbd class="q-kbd">Ctrl K</kbd><button class="clr" id="clr" aria-label="Limpar busca">×</button>
     </div>
   </div>
 </header>
@@ -4581,6 +4586,7 @@ function cmdkRender(q){
 function cmdkMark(){ for(var i=0;i<cmdkRows.length;i++){ if(cmdkRows[i].classList) cmdkRows[i].classList.toggle("sel", i===cmdkSel); } var s=cmdkRows[cmdkSel]; if(s&&s.scrollIntoView) s.scrollIntoView({block:"nearest"}); }
 function cmdkGo(row){ if(!row) return; var g=row.getAttribute?row.getAttribute("data-go"):null; closeCmdK(); if(g) go(g); }
 function setupCmdK(){
+  var srch=document.querySelector(".search"); if(srch&&srch.addEventListener) srch.addEventListener("mousedown",function(e){ e.preventDefault(); openCmdK(); });
   var q=document.getElementById("cmdk-q");
   if(q&&q.addEventListener) q.addEventListener("input",function(){ cmdkRender(String(q.value||"").trim()); });
   var res=document.getElementById("cmdk-res");
