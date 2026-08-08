@@ -3083,6 +3083,7 @@ function pdPhrase(d,w){
   if(p.tab){ var n=mg/p.tab; return {phrase:"Dar "+nf(mg,0)+" mg "+via+d.freq+".", detail:"≈ "+nf(n,2)+" comp de "+p.tab+" mg — fracionar conforme possível"+tail}; }
   var mL2=mg/p.conc; return {phrase:"Dar "+nf(mL2,1)+" mL "+via+d.freq+".", detail:nf(mg,0)+" mg/dose"+tail};
 }
+var PD_IND={para:"se dor ou febre",dipi:"se dor ou febre",ibup:"se dor ou febre",bromo:"se náusea ou vômito",metoclo:"se náusea ou vômito",ondan:"se náusea ou vômito",dimeni:"se náusea ou vômito",dexclor:"se coceira ou alergia",pred:"por 3 a 5 dias",predni:"por 3 a 5 dias"};
 function pdCardHTML(d,w){
   if(d.type==="info"){
     return '<div class="pd-card"><div class="pd-n">'+esc(d.n)+'</div><div class="pd-info">'+esc(d.text)+'</div>'+(d.flag?'<div class="pd-flag">'+esc(d.flag)+'</div>':'')+'</div>';
@@ -3098,7 +3099,10 @@ function pdCardHTML(d,w){
   h+='<div class="pd-doses">'+pdDoseChips(d).map(function(v){ return '<button type="button" class="dchip'+(v===st.dose?' on':'')+'" data-d="'+d.id+'" data-dose="'+v+'">'+nf(v,dec)+'</button>'; }).join('')+'</div>';
   var r=pdPhrase(d,w);
   var pcur=d.pres[st.p];
-  h+='<div class="rx pd-rx"><pre class="rx-pre">'+esc(d.n+" ("+pcur.l+") — "+r.phrase)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
+  var qty=pcur.tab?"1 caixa":"1 Frasco";
+  var ind=PD_IND[d.id]?(" "+PD_IND[d.id]):"";
+  var ph=ind?r.phrase.replace(/\.\s*$/, ind+"."):r.phrase;
+  h+='<div class="rx pd-rx"><pre class="rx-pre">'+esc(d.n+" ("+pcur.l+") ———— "+qty+"\n"+ph)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
   h+='<div class="pd-detail">'+esc(r.detail)+(d.cap?' · '+esc(d.cap):'')+'</div>';
   h+=(d.flag?'<div class="pd-flag">'+esc(d.flag)+'</div>':'');
   h+='</div>';
@@ -3172,7 +3176,7 @@ function patbCardHTML(d,w){
   // Frase (bloco .rx COM barra → copiável e editável)
   var pr=patbPhrase(d,w);
   var pcur=d.pres[patbSt[d.id].p]||d.pres[0];
-  h+='<div class="rx pd-rx"><pre class="rx-pre pd-edit" contenteditable="true" spellcheck="false">'+esc(d.n+" ("+pcur.l+") — "+pr.phrase)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
+  h+='<div class="rx pd-rx"><pre class="rx-pre pd-edit" contenteditable="true" spellcheck="false">'+esc(d.n+" ("+pcur.l+") ———— 1 Frasco\n"+pr.phrase)+'</pre><button class="rx-copy" type="button">Copiar</button></div>';
   h+='<div class="pd-detail">'+esc(pr.detail)+(d.dur?' · toque na frase para ajustar a duração':'')+'</div>';
   if(d.note) h+='<div class="pd-flag">'+esc(d.note)+'</div>';
   if(d.warns){ d.warns.forEach(function(wn){ if(wn.r===st.r && wn.p===st.p) h+='<div class="pd-warn">⚠ '+esc(wn.msg)+'</div>'; }); }
