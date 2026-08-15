@@ -650,6 +650,39 @@ table tr:hover{background:color-mix(in srgb,var(--primary) 4%,var(--surface))}
 .search{cursor:pointer}
 .search .q-kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3,var(--muted));border:1px solid var(--line);border-radius:5px;padding:2px 5px;margin-left:6px;flex:none;white-space:nowrap}
 
+
+/* ===== Pendências do plantão ===== */
+.pend-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 10px}
+.pend-count{font-size:13px;font-weight:700;color:var(--ink)}
+.pend-clear{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:9px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.pend-clear:hover{background:var(--rf-soft);color:var(--rf-ink);border-color:color-mix(in srgb,var(--rf) 35%,var(--line))}
+.pend-form{display:grid;grid-template-columns:1.5fr .6fr 1.2fr 1.7fr auto;gap:8px;margin-bottom:12px}
+.pend-in{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 11px;font:inherit;font-size:14px;color:var(--ink);min-width:0}
+.pend-in:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.pend-add{border:0;background:var(--primary);color:var(--primary-ink);border-radius:9px;padding:9px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pend-add:hover{filter:brightness(1.05)}
+.pend-tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.pend-table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
+.pend-table th{background:var(--surface2);text-align:left;padding:9px 12px;font-size:var(--fs-overline);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:2px solid var(--line-2,var(--line))}
+.pend-table td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.pend-table tr:last-child td{border-bottom:0}
+.pend-nome{font-weight:700;color:var(--ink)}
+.pend-time{white-space:nowrap;text-align:center}
+.pend-clock{font-family:var(--mono);font-size:16px;font-weight:700;display:block;letter-spacing:.02em}
+.pend-since{font-size:10.5px;color:var(--muted)}
+.pend-time.ok .pend-clock{color:var(--casa-ink,#0f5a38)}
+.pend-time.ok{background:var(--casa-soft,#e7f5ee)}
+.pend-time.warn .pend-clock{color:var(--warn-ink,#7a4d00)}
+.pend-time.warn{background:var(--warn-soft,#fdf2df)}
+.pend-time.crit .pend-clock{color:var(--rf-ink,#8e1e1a)}
+.pend-time.crit{background:var(--rf-soft,#fdeceb)}
+.pend-rm{border:1px solid var(--line);background:var(--surface);color:var(--casa-ink,#0f5a38);border-radius:8px;padding:6px 10px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.pend-rm:hover{background:var(--casa-soft,#e7f5ee);border-color:color-mix(in srgb,var(--casa,#16794b) 35%,var(--line))}
+.pend-empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13.5px;border:1px dashed var(--line);border-radius:12px}
+.pend-note{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.5}
+.sn-pend{color:var(--primary-ink)!important;font-weight:600}
+@media(max-width:760px){.pend-form{grid-template-columns:1fr 1fr}.pend-add{grid-column:1 / -1}}
+
 </style>
 <script>window.goatcounter={path:function(){return location.pathname+(location.hash||"#/")}};</script><script data-goatcounter="https://cerezuapp.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -4574,6 +4607,7 @@ function renderSidenav(){
     return '<button class="'+(f===faixa?'on':'')+'" data-faixa="'+f+'">'+lbl+'</button>';
   }).join('')+'</div>';
   h+='<button class="sn-home'+A("#/")+'" data-go="#/">\u2302 Início</button>';
+  h+='<button class="sn-item sn-pend'+A("#/pendencias")+'" data-go="#/pendencias"><span class="sn-em">\u23F1</span><span class="sn-nm">Pendências do plantão</span></button>';
   if(faixa==="adulto"){
     h+='<div class="sn-label">Categorias · '+DATA.total+'</div>';
     for(var i=0;i<DATA.categories.length;i++){var c=DATA.categories[i];
@@ -4769,9 +4803,73 @@ ANAFILAXIA: ADRENALINA IM 0,5 mg (1:1000) na coxa — NÃO retardar; é a droga 
 function renderGestQHome(){ emHome(GESTQ,"#/gestq","Gestante no PS","Queixas comuns na gestação com receituário e o que evitar: êmese/hiperêmese, cefaleia, lombalgia, asma e alergia. Doses e categorias — validar sempre."); }
 function renderGestQFocus(id){ emFocus(GESTQ,"#/gestq","Gestante no PS",id); }
 
+
+/* ===== Aba: Pendências do plantão (rastreador com cronômetro) ===== */
+var pendTimer=null;
+function pendLoad(){ try{ return JSON.parse(store.get("pendencias")||"[]"); }catch(e){ return []; } }
+function pendSave(a){ store.set("pendencias", JSON.stringify(a)); }
+function pend2(n){ return (n<10?"0":"")+n; }
+function fmtElapsed(ms){ if(ms<0)ms=0; var s=Math.floor(ms/1000); var h=Math.floor(s/3600); var m=Math.floor((s%3600)/60); var ss=s%60; return h>0 ? (h+":"+pend2(m)+":"+pend2(ss)) : (pend2(m)+":"+pend2(ss)); }
+function pendColor(ms){ var min=ms/60000; return min<60?"ok":(min<120?"warn":"crit"); }
+function pendHM(ts){ var d=new Date(ts); return pend2(d.getHours())+":"+pend2(d.getMinutes()); }
+function pendRenderList(){
+  var box=document.getElementById("pend-list"); if(!box) return;
+  var a=pendLoad(); var now=Date.now();
+  var cnt=document.getElementById("pend-count"); if(cnt) cnt.textContent=a.length+(a.length===1?" paciente":" pacientes");
+  if(!a.length){ box.innerHTML='<div class="pend-empty">Nenhuma pendência no momento. Adicione um paciente acima para iniciar o cronômetro.</div>'; return; }
+  var h='<div class="pend-tablewrap"><table class="pend-table"><thead><tr><th>Paciente</th><th>Idade</th><th>Diagnóstico</th><th>Conduta / pendência</th><th>Tempo aguardando</th><th></th></tr></thead><tbody>';
+  for(var i=0;i<a.length;i++){ var it=a[i]; var ms=now-it.ts;
+    h+='<tr><td class="pend-nome">'+esc(it.nome||"—")+'</td><td>'+esc(it.idade||"—")+'</td><td>'+esc(it.dx||"—")+'</td><td>'+esc(it.conduta||"—")+'</td>'
+     +'<td class="pend-time '+pendColor(ms)+'" id="pend-td-'+it.id+'"><b class="pend-clock" id="pend-c-'+it.id+'">'+fmtElapsed(ms)+'</b><span class="pend-since">início '+pendHM(it.ts)+'</span></td>'
+     +'<td><button class="pend-rm" data-pend-rm="'+it.id+'" title="Resolver / remover">\u2713 resolver</button></td></tr>';
+  }
+  h+='</tbody></table></div>';
+  box.innerHTML=h;
+}
+function pendTick(){
+  var a=pendLoad(); var now=Date.now();
+  for(var i=0;i<a.length;i++){ var it=a[i]; var ms=now-it.ts;
+    var c=document.getElementById("pend-c-"+it.id); if(c) c.textContent=fmtElapsed(ms);
+    var td=document.getElementById("pend-td-"+it.id); if(td) td.className="pend-time "+pendColor(ms);
+  }
+}
+function pendAdd(){
+  var nome=document.getElementById("pend-nome"), idade=document.getElementById("pend-idade"), dx=document.getElementById("pend-dx"), cond=document.getElementById("pend-conduta");
+  var nm=nome?String(nome.value||"").trim():""; if(!nm){ if(nome){ nome.focus(); } return; }
+  var a=pendLoad();
+  a.push({id:"p"+Date.now()+Math.floor(Math.random()*1000), nome:nm, idade:idade?String(idade.value||"").trim():"", dx:dx?String(dx.value||"").trim():"", conduta:cond?String(cond.value||"").trim():"", ts:Date.now()});
+  pendSave(a);
+  if(nome)nome.value="";if(idade)idade.value="";if(dx)dx.value="";if(cond)cond.value="";
+  pendRenderList(); if(nome)nome.focus();
+}
+function pendRemove(id){ var a=pendLoad().filter(function(x){return x.id!==id;}); pendSave(a); pendRenderList(); }
+function pendClear(){ var a=pendLoad(); if(!a.length) return; if(typeof confirm==="function" && !confirm("Limpar TODAS as pendências do plantão? Esta ação não pode ser desfeita.")) return; pendSave([]); pendRenderList(); }
+function renderPendencias(){
+  var h='<button class="back" data-go="#/">\u2039 Início</button>';
+  h+='<div class="fhead"><h1>Pendências do plantão</h1><div class="sclead">Acompanhe quem está aguardando conduta ou resultado, com cronômetro por paciente. Fica salvo neste aparelho.</div></div>';
+  h+='<div class="pend-bar"><span id="pend-count" class="pend-count">0 pacientes</span><button class="pend-clear" id="pend-clear">Limpar plantão</button></div>';
+  h+='<div class="pend-form">'
+   +'<input id="pend-nome" class="pend-in" placeholder="Nome do paciente" autocomplete="off">'
+   +'<input id="pend-idade" class="pend-in" placeholder="Idade" autocomplete="off">'
+   +'<input id="pend-dx" class="pend-in" placeholder="Diagnóstico / hipótese" autocomplete="off">'
+   +'<input id="pend-conduta" class="pend-in" placeholder="Conduta / o que aguarda (TC, ECG, reavaliar...)" autocomplete="off">'
+   +'<button class="pend-add" id="pend-add">+ Adicionar</button>'
+   +'</div>';
+  h+='<div id="pend-list"></div>';
+  h+='<div class="pend-note">Toque em "\u2713 resolver" quando o paciente for conduzido/liberado. Cores do tempo: verde &lt; 1h, amarelo 1-2h, vermelho &gt; 2h. "Limpar plantão" zera tudo no fim do turno.</div>';
+  view.innerHTML=h;
+  pendRenderList();
+  var add=document.getElementById("pend-add"); if(add) add.addEventListener("click", pendAdd);
+  var clr=document.getElementById("pend-clear"); if(clr) clr.addEventListener("click", pendClear);
+  var list=document.getElementById("pend-list"); if(list) list.addEventListener("click", function(e){ var b=e.target.closest?e.target.closest("[data-pend-rm]"):null; if(b) pendRemove(b.getAttribute("data-pend-rm")); });
+  ["pend-nome","pend-idade","pend-dx","pend-conduta"].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); pendAdd(); } }); });
+  if(pendTimer){clearInterval(pendTimer);} pendTimer=setInterval(pendTick,1000);
+}
+
 // ---- router ----
 function render(){
   renderSidenav();
+  if(pendTimer){clearInterval(pendTimer);pendTimer=null;}
   if(isrTimer){clearInterval(isrTimer);isrTimer=null;}
   const q = input.value.trim();
   clr.style.display = q ? "block":"none";
@@ -4784,6 +4882,7 @@ function render(){
   else if(hash.indexOf("#/escores")===0) renderScoresHome();
   else if(hash.indexOf("#/calc/")===0) renderCalc(hash.slice(7));
   else if(hash.indexOf("#/calculadoras")===0) renderCalcsHome();
+  else if(hash.indexOf("#/pendencias")===0) renderPendencias();
   else if(hash.indexOf("#/gestq/")===0) renderGestQFocus(hash.slice(8));
   else if(hash.indexOf("#/gestq")===0) renderGestQHome();
   else if(hash.indexOf("#/gestlact")===0) renderGestLact();
